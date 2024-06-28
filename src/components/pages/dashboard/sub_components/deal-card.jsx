@@ -70,14 +70,14 @@ const Dealchart = () => {
                     <h5 className="m-0 me-2">Validations by States</h5>
                     <small className="text-muted">Monthly Overview</small>
                 </div>
-                <div className="dropdown">
+                {/* <div className="dropdown">
                     <button className="btn p-0" type="button" id="salesByCountry" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i className="ti ti-dots-vertical ti-sm text-muted"></i>
                     </button>
                     <div className="dropdown-menu dropdown-menu-end" aria-labelledby="salesByCountry">
                         <button className="dropdown-item" type="button">Refresh</button>
                     </div>
-                </div>
+                </div> */}
             </div>
 
             <div className="card-body">

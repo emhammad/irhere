@@ -54,14 +54,14 @@ const Reportscharts = () => {
             <small className="text-muted">Weekly Earnings Overview</small>
           </div>
 
-          <div className="dropdown">
+          {/* <div className="dropdown">
             <button className="btn p-0" type="button" id="earningReports" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
               <i className="ti ti-dots-vertical ti-sm text-muted"></i>
             </button>
             <div className="dropdown-menu dropdown-menu-end" aria-labelledby="earningReports">
               <Link className="dropdown-item" to="">Refresh</Link>
             </div>
-          </div>
+          </div> */}
 
         </div>
 
