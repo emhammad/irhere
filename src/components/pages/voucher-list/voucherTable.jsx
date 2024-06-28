@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-// import toast from 'react-hot-toast';
 
 const Table = () => {
     const user = useSelector((state) => state.user?.user || []);
@@ -12,16 +11,27 @@ const Table = () => {
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const itemsPerPage = 10;
 
+    const [searchTerms, setSearchTerms] = useState({
+        code: '',
+        expired: '',
+        is_used: '',
+    });
+
     useEffect(() => {
         const fetchVoucher = async () => {
-
             const token = user?.access_token;
             try {
+                const params = {};
+                if (searchTerms.code) params.code = searchTerms.code;
+                if (searchTerms.expired) params.expired = searchTerms.expired;
+                if (searchTerms.is_used) params.is_used = searchTerms.is_used;
+
                 const response = await axios.get(`${url}/api/get_voucher/page/${currentPage}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
+                    params,
                 });
 
                 setVoucher(response.data.Data || []);
@@ -37,7 +47,7 @@ const Table = () => {
             }
         };
         fetchVoucher();
-    }, [currentPage, user, url]);
+    }, [currentPage, user, url, searchTerms]);
 
     const nextPage = () => {
         setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPagesLength));
@@ -47,30 +57,16 @@ const Table = () => {
         setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
     };
 
-    const [searchTerms, setSearchTerms] = useState({
-        voucher_code: '',
-        date: '',
-        valid_date: '',
-    });
-
-    const filteredData = voucher.filter(item => {
-        return (
-            item.voucher_code.toLowerCase().includes(searchTerms.voucher_code.toLowerCase()) &&
-            item.date.toLowerCase().includes(searchTerms.date.toLowerCase()) &&
-            item.valid_date.toLowerCase().includes(searchTerms.valid_date.toLowerCase())
-        );
-    });
-
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setSearchTerms(predata => ({
-            ...predata,
+        setSearchTerms(prevData => ({
+            ...prevData,
             [name]: value
         }));
     };
 
     const handleExportCSV = () => {
-        const csvContent = filteredData.map(item => [
+        const csvContent = voucher.map(item => [
             item.voucher_code,
             formatDate(item.date),
             formatDate(item.valid_date),
@@ -143,8 +139,8 @@ const Table = () => {
                                                     type="text"
                                                     className="form-control"
                                                     placeholder="Search by Voucher Code..."
-                                                    name="voucher_code"
-                                                    value={searchTerms.voucher_code}
+                                                    name="code"
+                                                    value={searchTerms.code}
                                                     onChange={handleChange}
                                                 />
                                             </div>
@@ -152,17 +148,17 @@ const Table = () => {
                                         <td colSpan="3">
                                             <select
                                                 className="form-select rounded"
-                                                name="Card"
-                                                value={searchTerms.Card}
+                                                name="is_used"
+                                                value={searchTerms.is_used}
                                                 onChange={handleChange}
                                             >
                                                 <option value="">Select by expired & used</option>
-                                                <option value="expired">Expired</option>
-                                                <option value="used">Used</option>
+                                                <option value="true">Expired</option>
+                                                <option value="false">Used</option>
                                             </select>
                                         </td>
                                     </tr>
-                                    {filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(item => (
+                                    {voucher.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(item => (
                                         <tr key={item.voucher_code}>
                                             <td><small>{item.voucher_code}</small></td>
                                             <td><small>{item.date}</small></td>

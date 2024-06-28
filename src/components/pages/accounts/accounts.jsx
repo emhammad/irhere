@@ -205,27 +205,6 @@ const AccountSettings = () => {
                     </form>
                 </div>
             </div>
-
-            <div className="card">
-                <h5 className="card-header">Delete Account</h5>
-                <div className="card-body">
-                    <div className="mb-3 col-12">
-                        <div className="alert alert-warning">
-                            <h5 className="alert-heading mb-1">Are you sure you want to delete your account?</h5>
-                            <p className="mb-0">Once you delete your account, there is no going back. Please be certain.</p>
-                        </div>
-                    </div>
-                    <form id="formAccountDeactivation" className="fv-plugins-bootstrap5 fv-plugins-framework" novalidate="novalidate">
-                        <div className="form-check mb-4">
-                            <input className="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" />
-                            <label className="form-check-label" htmlFor="accountActivation">I confirm my account deactivation</label>
-                            <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
-                        </div>
-                        <button type="submit" className="btn btn-danger deactivate-account waves-effect waves-light" disabled>Deactivate Account</button>
-                        <input type="hidden" />
-                    </form>
-                </div>
-            </div>
         </div>
     );
 };
@@ -255,7 +234,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
 
         // Check if newPassword matches confirmPassword
         if (newPassword !== confirmPassword) {
-            console.log('New password and confirm password do not match');
+            toast.error('New password and confirm password do not match');
             return;
         }
 
@@ -278,7 +257,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
             toast.success('Password updated successfully');
         } catch (error) {
             console.error(error);
-            console.log('Error updating password');
+            toast.error('Error updating password');
         }
     };
 

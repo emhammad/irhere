@@ -57,16 +57,16 @@ const Login = () => {
         navigate('/dashboard');
       } else {
         // Show error for incorrect username/password or other errors
-        console.log(response.data.desc || "An error occurred");
+        toast.error(response.data.desc || "An error occurred");
       }
     } catch (error) {
       // Error occurred while making the request
       console.error('Error posting data:', error.message);
       // Show error message based on error type
       if (error.response && error.response.status === 401) {
-        console.log("Incorrect username/password");
+        toast.error("Incorrect username/password");
       } else {
-        console.log("An error occurred");
+        toast.error("An error occurred");
       }
     }
 

@@ -12,12 +12,23 @@ const Table = () => {
   const itemsPerPage = 10; // Number of items to display per page
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-  const fetchUsers = async () => {
+  const [searchTerms, setSearchTerms] = useState({
+    id: "",
+    name: "",
+    email: "",
+    phone_no: "",
+  });
 
+  const fetchUsers = async () => {
     try {
       const token = user?.access_token;
       if (!token) {
         throw new Error("No access token available");
+      }
+
+      let params = {};
+      if (Object.values(searchTerms).every(term => term)) {
+        params = { ...searchTerms };
       }
 
       const response = await axios.get(`${url}/api/get_user_list/page/${currentPage}`, {
@@ -25,33 +36,33 @@ const Table = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        params: params
       });
-      setUsers(response?.data);
 
+      setUsers(response?.data);
       setTotalItems(response.data?.Data?.length);
 
     } catch (error) {
       console.error("Error fetching users:", error);
-      console.log(`Error fetching users: ${error.message}`);
+      toast.error(`Error fetching users: ${error.message}`);
     }
   };
-  useEffect(() => {
-    fetchUsers()
-    // eslint-disable-next-line
-  }, [user, currentPage])
 
+  useEffect(() => {
+    fetchUsers();
+    // eslint-disable-next-line
+  }, [user, currentPage, searchTerms]);
 
   const nextPage = () => {
     setCurrentPage((prevPage) => {
-      return prevPage + 1
+      return prevPage + 1;
     });
-
   };
-
 
   const prevPage = () => {
     setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
   };
+
   const mapFields = [
     { id: 1, name: "id", placeholder: "IRhereNumber..." },
     { id: 2, name: "name", placeholder: "Name..." },
@@ -59,28 +70,14 @@ const Table = () => {
     { id: 4, name: "phone_no", placeholder: "Phone..." },
   ];
 
-  const [searchTerms, setSearchTerms] = useState({
-    id: "",
-    name: "",
-    email: "",
-    phone_no: "",
-    date: "",
+  const filterData = User?.Data?.filter((item) => {
+    return (
+      item.id.toLowerCase().includes(searchTerms.id.toLowerCase()) &&
+      item.name.toLowerCase().includes(searchTerms.name.toLowerCase()) &&
+      item.email.toLowerCase().includes(searchTerms.email.toLowerCase()) &&
+      item.phone_no.toLowerCase().includes(searchTerms.phone_no.toLowerCase())
+    );
   });
-
-  const filterData =
-    User &&
-    User?.Data &&
-    User?.Data.filter((item) => {
-      return (
-        item.id.toLowerCase().includes(searchTerms.id.toLowerCase()) &&
-        item.name.toLowerCase().includes(searchTerms.name.toLowerCase()) &&
-        item.email.toLowerCase().includes(searchTerms.email.toLowerCase()) &&
-        item.phone_no
-          .toLowerCase()
-          .includes(searchTerms.phone_no.toLowerCase()) &&
-        item.date.toLowerCase().includes(searchTerms.date.toLowerCase())
-      );
-    });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,7 +88,12 @@ const Table = () => {
   };
 
   const handleExportCSV = () => {
-    const csvContent = User && User?.length >= 1 && User?.map(item => [
+    if (!User.Data) {
+      toast.error("No data available to export");
+      return;
+    }
+
+    const csvContent = User.Data.map(item => [
       item.voucher_code,
       formatDate(item.date),
       formatDate(item.valid_date),
@@ -111,7 +113,9 @@ const Table = () => {
   };
 
   const formatDate = (dateString) => {
-    // Assuming the date string is in format "MM-DD-YY HH:mm:ss"
+    if (!dateString) {
+      return "";
+    }
     const [datePart, timePart] = dateString.split(' ');
     const [month, day, year] = datePart.split('-');
     const [hour, minute, second] = timePart.split(':');
@@ -122,10 +126,7 @@ const Table = () => {
     <div>
       <div className="card">
         <div className="card-datatable pt-0">
-          <div
-            id="DataTables_Table_0_wrapper"
-            className="dataTables_wrapper dt-bootstrap5 no-footer"
-          >
+          <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
             <div className="card-header header-flex d-flex justify-content-between p-3">
               <div className="head-label d-flex align-items-center">
                 <h5 className="card-title mb-0">User List</h5>
@@ -177,36 +178,19 @@ const Table = () => {
                       <td key={field.id}>
                         <div className="input-group input-group-merge">
                           <span
-                            className={`input-group-text p-2  d-${field.name === "Card" ? "none" : "block"
-                              }`}
+                            className={`input-group-text p-2 d-${field.name === "Card" ? "none" : "block"}`}
                             id={`basic-addon-search${field.id}`}
                           >
                             <i className="ti ti-search"></i>
                           </span>
-                          {field.name === "Card" ? (
-                            <select
-                              className="form-select rounded"
-                              name={field.name}
-                              value={searchTerms[field.name]}
-                              onChange={handleChange}
-                            >
-                              <option value="">Phones</option>
-                              {field.options.map((option) => (
-                                <option key={option} value={option}>
-                                  {option}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            <input
-                              type="text"
-                              className="form-control"
-                              name={field.name}
-                              value={searchTerms[field.name]}
-                              placeholder={field.placeholder}
-                              onChange={handleChange}
-                            />
-                          )}
+                          <input
+                            type="text"
+                            className="form-control"
+                            name={field.name}
+                            value={searchTerms[field.name]}
+                            placeholder={field.placeholder}
+                            onChange={handleChange}
+                          />
                         </div>
                       </td>
                     ))}
@@ -260,13 +244,9 @@ const Table = () => {
                   className="dataTables_paginate paging_simple_numbers d-flex align-items-center"
                   id="DataTables_Table_0_paginate"
                 >
-                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1
-                    }-${Math.min(
-                      currentPage * itemsPerPage,
-                      totalItems
-                    )} of ${totalItems}`}</p>
+                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems}`}</p>
                   <span
-                    className={`p-2 ${currentPage === '1' ? 'disabled' : ''}`}
+                    className={`p-2 ${currentPage === 1 ? 'disabled' : ''}`}
                     onClick={prevPage}
                   >
                     <i className="fas fa-angle-left text-muted cursor-pointer"></i>
@@ -274,7 +254,6 @@ const Table = () => {
                   <span
                     className={`p-2 ${currentPage === totalPages ? 'disabled' : ''}`}
                     onClick={nextPage}
-
                   >
                     <i className="fas fa-angle-right cursor-pointer"></i>
                   </span>

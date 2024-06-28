@@ -23,7 +23,7 @@ const Table = () => {
     const transactionData = async () => {
       const token = user?.access_token;
       if (!token) {
-        console.log("No access token available");
+        toast.error("No access token available");
         return;
       }
 

@@ -41,7 +41,7 @@ const AppSetting = () => {
       setTerms({ terms, bvdt, avdt });
     } catch (error) {
       console.error("Error :", error);
-      console.log(`Error : ${error.message}`);
+      toast.error(`Error : ${error.message}`);
     }
   };
   const handleChange = (e) => {
@@ -66,7 +66,7 @@ const AppSetting = () => {
       toast.success("Terms are updated successfully ")
       await fetchTerms()
     } catch (error) {
-      console.log(error.message)
+      toast.error(error.message)
     }
   };
 
