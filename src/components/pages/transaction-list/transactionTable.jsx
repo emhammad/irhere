@@ -17,6 +17,7 @@ const Table = () => {
     name: "",
     email: "",
     amount: "",
+    Card: "", // Add Card for filtering by debit/credit
   });
 
   useEffect(() => {
@@ -28,23 +29,22 @@ const Table = () => {
       }
 
       try {
-        const response = await axios.get(
-          `${url}/api/get_transaction_history/page/${currentPage}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            // params: {
-            //   id: searchTerms.id,
-            //   name: searchTerms.name,
-            //   email: searchTerms.email,
-            //   amount: searchTerms.amount,
-            // },
-          }
-        );
+        const params = {
+          page: currentPage,
+          id: searchTerms.id || undefined,
+          name: searchTerms.name || undefined,
+          email: searchTerms.email || undefined,
+          amount: searchTerms.amount || undefined,
+          Card: searchTerms.Card || undefined,
+        };
 
-        console.log(response);
+        const response = await axios.get(`${url}/api/get_transaction_history/page/${currentPage}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          params: params,
+        });
 
         if (Array.isArray(response.data?.Data)) {
           setTransaction(response.data.Data);
