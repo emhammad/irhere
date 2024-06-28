@@ -22,7 +22,7 @@ function MyVerticallyCenteredModal(props) {
                 });
                 console.log("Response data:", response.data);
             } catch (error) {
-                // toast.error(error.message);
+                // console.log(error.message);
                 console.log(error.message);
             }
         };

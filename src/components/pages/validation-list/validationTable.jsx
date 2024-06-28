@@ -90,11 +90,11 @@ const Table = () => {
             } else {
                 setTotalItems(0);
                 setTotalPagesLength(1);
-                toast.error("Unexpected data format");
+                console.log("Unexpected data format");
             }
         } catch (error) {
             console.log(error);
-            toast.error("Failed to fetch data");
+            console.log("Failed to fetch data");
         }
     };
 

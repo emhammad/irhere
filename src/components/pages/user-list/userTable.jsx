@@ -32,7 +32,7 @@ const Table = () => {
 
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error(`Error fetching users: ${error.message}`);
+      console.log(`Error fetching users: ${error.message}`);
     }
   };
   useEffect(() => {

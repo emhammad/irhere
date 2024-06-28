@@ -109,7 +109,7 @@ const SliderCustomized = () => {
       console.log(updateRadius.data.desc);
       toast.success("Updated Successfully.");
     } catch (error) {
-      toast.error('Error updating verification radius');
+      console.log('Error updating verification radius');
       console.log(error);
     }
   }

@@ -255,7 +255,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
 
         // Check if newPassword matches confirmPassword
         if (newPassword !== confirmPassword) {
-            toast.error('New password and confirm password do not match');
+            console.log('New password and confirm password do not match');
             return;
         }
 
@@ -278,7 +278,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
             toast.success('Password updated successfully');
         } catch (error) {
             console.error(error);
-            toast.error('Error updating password');
+            console.log('Error updating password');
         }
     };
 
