@@ -37,7 +37,6 @@ const Dealchart = () => {
         }
     }, [url, user]);
 
-    // Placeholder function to get the flag based on the country/state
     const getStateFlag = (country) => {
         switch (country) {
             case 'ACT': return ACTFLAG;
@@ -52,16 +51,27 @@ const Dealchart = () => {
         }
     };
 
-    // Convert states object to an array of data objects
-    const data = Object.keys(states).map((key, index) => ({
-        id: index + 1,
-        flag: getStateFlag(key),
-        count: states[key],
-        country: key,
-        icon: 'ti ti-chevron-up', // Update this if needed
-        status: 'text-success', // Update this if needed
-        per: '25.8%' // Update this if needed
-    }));
+    const totalDealCount = Object.values(states).reduce((acc, count) => acc + count, 0);
+
+    const data = Object.keys(states).map((key, index) => {
+        const count = states[key];
+        const percentage = ((count / totalDealCount) * 100).toFixed(2);
+        let status = 'text-success';
+        let icon = 'ti ti-chevron-up';
+        if (count === 0 || (index > 0 && count < Object.values(states)[index - 1])) {
+            status = 'text-danger';
+            icon = 'ti ti-chevron-down';
+        }
+        return {
+            id: index + 1,
+            flag: getStateFlag(key),
+            count: count,
+            country: key,
+            icon: icon,
+            status: status,
+            per: `${percentage}%`
+        };
+    });
 
     return (
         <div className="card h-100">
@@ -70,20 +80,11 @@ const Dealchart = () => {
                     <h5 className="m-0 me-2">Validations by States</h5>
                     <small className="text-muted">Monthly Overview</small>
                 </div>
-                {/* <div className="dropdown">
-                    <button className="btn p-0" type="button" id="salesByCountry" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i className="ti ti-dots-vertical ti-sm text-muted"></i>
-                    </button>
-                    <div className="dropdown-menu dropdown-menu-end" aria-labelledby="salesByCountry">
-                        <button className="dropdown-item" type="button">Refresh</button>
-                    </div>
-                </div> */}
             </div>
 
             <div className="card-body">
                 <ul className="p-0 m-0">
                     {data && data.length > 0 ? (
-
                         data.map((deal) => (
                             <li className="d-flex align-items-center mb-4" key={deal.id}>
                                 <div className='pe-2'>

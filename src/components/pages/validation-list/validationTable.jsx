@@ -12,6 +12,8 @@ const Table = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
+    const [stats, setStats] = useState(0);
+
     const itemsPerPage = 10;
 
     const [searchTerms, setSearchTerms] = useState({
@@ -79,6 +81,14 @@ const Table = () => {
                     ...params
                 },
             });
+
+            const statistics = await axios.get(`${url}/api/dashboard_stats`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            setStats(statistics.data.total_validations);
 
             if (response.status === 200) {
                 const dataArray = Object.values(response.data.Data);
@@ -251,7 +261,7 @@ const Table = () => {
                                         }-${Math.min(
                                             currentPage * itemsPerPage,
                                             totalItems
-                                        )} of ${totalItems}`}</p>
+                                        )} of ${stats}`}</p>
                                     <button
                                         className={`p-2 border-0 bg-transparent`}
                                         onClick={prevPage}

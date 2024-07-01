@@ -9,6 +9,8 @@ const Table = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
+    const [stats, setStats] = useState(0);
+
     const itemsPerPage = 10;
 
     const [searchTerms, setSearchTerms] = useState({
@@ -22,19 +24,35 @@ const Table = () => {
             const token = user?.access_token;
             try {
                 const params = {};
+
                 if (searchTerms.code) params.code = searchTerms.code;
-                if (searchTerms.expired) params.expired = searchTerms.expired;
-                if (searchTerms.is_used) params.is_used = searchTerms.is_used;
+                if (searchTerms.expired) {
+                    params.expired = searchTerms.expired;
+                } else if (searchTerms.is_used) {
+                    params.is_used = searchTerms.is_used;
+                }
+
+                console.log(params);
 
                 const response = await axios.get(`${url}/api/get_voucher/page/${currentPage}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
-                    params,
+                    params: Object.keys(params).length ? params : undefined,
                 });
 
                 setVoucher(response.data.Data || []);
+
+
+                const statistics = await axios.get(`${url}/api/dashboard_stats`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setStats(statistics.data.total_vouchers);
+
                 if (response.status === 200) {
                     setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
                     setTotalPagesLength(response.data.Page?.TotalPages || 1);
@@ -61,8 +79,11 @@ const Table = () => {
         const { name, value } = e.target;
         setSearchTerms(prevData => ({
             ...prevData,
-            [name]: value
+            [name]: value,
+            expired: name === 'is_used' ? '' : prevData.expired,
+            is_used: name === 'expired' ? '' : prevData.is_used
         }));
+        console.log(value);
     };
 
     const handleExportCSV = () => {
@@ -102,7 +123,7 @@ const Table = () => {
                         </div>
                         <div className="dt-action-buttons text-end pt-3 pt-md-0">
                             <div className="dt-buttons">
-                                <button className="dt-button buttons-collection  btn btn-label-primary me-2 waves-effect waves-light"
+                                <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light"
                                     onClick={handleExportCSV} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
                                     <span>
                                         <i className="ti ti-upload me-1 ti-xs"></i>
@@ -148,13 +169,12 @@ const Table = () => {
                                         <td colSpan="3">
                                             <select
                                                 className="form-select rounded"
-                                                name="is_used"
-                                                value={searchTerms.is_used}
+                                                name=""
                                                 onChange={handleChange}
                                             >
                                                 <option value="">Select by expired & used</option>
-                                                <option value="true">Expired</option>
-                                                <option value="false">Used</option>
+                                                <option value="0">Expired</option>
+                                                <option value="0">Used</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -165,9 +185,11 @@ const Table = () => {
                                             <td><small>{item.valid_date}</small></td>
                                             <td><small>{item.amount}</small></td>
                                             <td>
-                                                <span className={`badge ${item.is_used ? "bg-label-danger" : "bg-label-success"}`}>
-                                                    {item.is_used ? "Expired" : "Used"}
-                                                </span>
+                                                {item.expired ? (
+                                                    <span className="badge bg-label-danger">Expired</span>
+                                                ) : item.is_used ? (
+                                                    <span className="badge bg-label-success">Used</span>
+                                                ) : null}
                                             </td>
                                         </tr>
                                     ))}
@@ -184,7 +206,7 @@ const Table = () => {
                                         }-${Math.min(
                                             currentPage * itemsPerPage,
                                             totalItems
-                                        )} of ${totalItems}`}</p>
+                                        )} of ${stats}`}</p>
                                     <button
                                         className={`p-2 border-0 bg-transparent`}
                                         onClick={prevPage}
@@ -197,7 +219,7 @@ const Table = () => {
                                         onClick={nextPage}
                                         disabled={currentPage === totalPagesLength}
                                     >
-                                        <i className={`fas fa-angle-right cursor-pointer  ${currentPage === totalPagesLength ? 'text-muted' : ''}`}></i>
+                                        <i className={`fas fa-angle-right cursor-pointer ${currentPage === totalPagesLength ? 'text-muted' : ''}`}></i>
                                     </button>
                                 </div>
                             </div>

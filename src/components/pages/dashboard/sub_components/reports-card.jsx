@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import '../style.css';
 import { BarChart, Bar, XAxis, YAxis } from 'recharts';
 import { useSelector } from 'react-redux';
@@ -53,16 +52,6 @@ const Reportscharts = () => {
             <h5 className="m-0 me-2">Earning Reports</h5>
             <small className="text-muted">Weekly Earnings Overview</small>
           </div>
-
-          {/* <div className="dropdown">
-            <button className="btn p-0" type="button" id="earningReports" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              <i className="ti ti-dots-vertical ti-sm text-muted"></i>
-            </button>
-            <div className="dropdown-menu dropdown-menu-end" aria-labelledby="earningReports">
-              <Link className="dropdown-item" to="">Refresh</Link>
-            </div>
-          </div> */}
-
         </div>
 
         <div className="card-body chart">

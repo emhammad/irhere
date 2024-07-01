@@ -10,6 +10,7 @@ const Table = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10; // Number of items to display per page
+  const [stats, setStats] = useState(0);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   const [searchTerms, setSearchTerms] = useState({
@@ -41,6 +42,14 @@ const Table = () => {
 
       setUsers(response?.data);
       setTotalItems(response.data?.Data?.length);
+
+      const statistics = await axios.get(`${url}/api/dashboard_stats`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+        }
+    });
+    setStats(statistics.data.total_users);
 
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -240,7 +249,7 @@ const Table = () => {
                   className="dataTables_paginate paging_simple_numbers d-flex align-items-center"
                   id="DataTables_Table_0_paginate"
                 >
-                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalItems}`}</p>
+                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${stats}`}</p>
                   <span
                     className={`p-2 ${currentPage === 1 ? 'disabled' : ''}`}
                     onClick={prevPage}
