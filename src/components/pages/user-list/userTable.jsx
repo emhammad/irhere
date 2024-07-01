@@ -221,10 +221,6 @@ const Table = () => {
                               <i className="ti ti-dots-vertical ti-sm text-muted"></i>
                             </button>
                             <div className="dropdown-menu dropdown-menu-end py-2 rounded text-center">
-                              <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center py-2 gap-2">
-                                <i className="ti ti-pencil hm-icon-size"></i>
-                                Edit
-                              </button>
                               <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2">
                                 <i className="ti ti-trash hm-icon-size"></i>
                                 Delete
