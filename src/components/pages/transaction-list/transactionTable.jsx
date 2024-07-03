@@ -187,7 +187,7 @@ const Table = () => {
                     <th style={{ width: "10%" }}>Name</th>
                     <th>Email/Phone</th>
                     <th>Amount</th>
-                    <th>Debit/Credit</th>
+                    {/* <th>Debit/Credit</th> */}
                     <th style={{ width: "17%" }}>Location</th>
                     <th>Balance</th>
                     <th>Action</th>
@@ -267,7 +267,7 @@ const Table = () => {
                         />
                       </div>
                     </td>
-                    <td>
+                    {/* <td>
                       <select
                         className="form-select rounded"
                         name="Card"
@@ -278,7 +278,7 @@ const Table = () => {
                         <option value="debit">Debit</option>
                         <option value="credit">Credit</option>
                       </select>
-                    </td>
+                    </td> */}
                     <td>
                       <div className="input-group input-group-merge">
                         <span
@@ -307,7 +307,7 @@ const Table = () => {
                       <td><small>{item.name}</small></td>
                       <td><small>{item.email}</small></td>
                       <td><small>{item.amount}</small></td>
-                      <td>
+                      {/* <td>
                         <span
                           className={`badge ${item.Card === "Credit"
                             ? "bg-label-success"
@@ -316,7 +316,7 @@ const Table = () => {
                         >
                           {item.Card === "Credit" ? "Credit" : "Debit"}
                         </span>
-                      </td>
+                      </td> */}
                       <td className=""><small>{item.descrip}</small></td>
                       <td><small>{item.balance}</small></td>
                       <td>

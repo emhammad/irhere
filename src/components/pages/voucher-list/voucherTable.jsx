@@ -77,13 +77,21 @@ const Table = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setSearchTerms(prevData => ({
-            ...prevData,
-            [name]: value,
-            expired: name === 'is_used' ? '' : prevData.expired,
-            is_used: name === 'expired' ? '' : prevData.is_used
-        }));
-        console.log(value);
+        console.log("Name: " + name);
+        console.log("Value: " + value);
+
+        if (value === "expired") {
+            setSearchTerms(prevData => ({
+                ...prevData,
+                expired: value,
+            }));
+        }
+        else if (value === "is_used") {
+            setSearchTerms(prevData => ({
+                ...prevData,
+                is_used: value
+            }));
+        }
     };
 
     const handleExportCSV = () => {
@@ -169,12 +177,12 @@ const Table = () => {
                                         <td colSpan="3">
                                             <select
                                                 className="form-select rounded"
-                                                name=""
+                                                name="status"
                                                 onChange={handleChange}
                                             >
-                                                <option value="">Select by expired & used</option>
-                                                <option value="0">Expired</option>
-                                                <option value="0">Used</option>
+                                                <option>Select by expired & used</option>
+                                                <option value="expired">Expired</option>
+                                                <option value="is_used">Used</option>
                                             </select>
                                         </td>
                                     </tr>
