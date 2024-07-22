@@ -1,7 +1,11 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { signOut } from "../../../store/Slices/UserSlice";
 
 const SidebarNavbar = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const location = useLocation();
 
@@ -9,7 +13,10 @@ const SidebarNavbar = () => {
     return location.pathname === pathname
   }
 
-
+  const handleSignOutUser = () => {
+    dispatch(signOut());
+    navigate("/")
+  }
   return (
     <>
       {/* Navbar */}
@@ -50,7 +57,7 @@ const SidebarNavbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link className="dropdown-item" to="/">
+                  <Link className={`dropdown-item`} onClick={handleSignOutUser}>
                     <i className="ti ti-logout me-2 ti-sm"></i>
                     <span className="align-middle">Log Out</span>
                   </Link>

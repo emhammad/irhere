@@ -5,6 +5,7 @@ import SliderCustomMarks from "./slider";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const AppSetting = () => {
   const user = useSelector((state) => state.user?.user || []);
@@ -16,6 +17,7 @@ const AppSetting = () => {
   const url = process.env.REACT_APP_SERVER_DOMAIN;
   const getTemsApi = `${url}/api/get_terms`;
   const updateTemsApi = `${url}/api/update_terms`;
+  const navigate = useNavigate()
 
   useEffect(() => {
 
@@ -26,7 +28,8 @@ const AppSetting = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        throw new Error("No access token available");
+        toast.error("Access token Expired");
+        navigate('/')
       }
 
       const response = await axios.post(getTemsApi, {

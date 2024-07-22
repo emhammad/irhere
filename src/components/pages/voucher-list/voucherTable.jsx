@@ -27,9 +27,9 @@ const Table = () => {
 
                 if (searchTerms.code) params.code = searchTerms.code;
                 if (searchTerms.expired) {
-                    params.expired = searchTerms.expired;
+                    params.expired = 0;
                 } else if (searchTerms.is_used) {
-                    params.is_used = searchTerms.is_used;
+                    params.is_used = 0;
                 }
 
                 console.log(params);
@@ -43,7 +43,6 @@ const Table = () => {
                 });
 
                 setVoucher(response.data.Data || []);
-
 
                 const statistics = await axios.get(`${url}/api/dashboard_stats`, {
                     headers: {
@@ -80,16 +79,21 @@ const Table = () => {
         console.log("Name: " + name);
         console.log("Value: " + value);
 
+        setSearchTerms(prevData => ({
+            ...prevData,
+            expired: '',
+            is_used: ''
+        }));
+
         if (value === "expired") {
             setSearchTerms(prevData => ({
                 ...prevData,
-                expired: value,
+                expired: '0',
             }));
-        }
-        else if (value === "is_used") {
+        } else if (value === "is_used") {
             setSearchTerms(prevData => ({
                 ...prevData,
-                is_used: value
+                is_used: '0'
             }));
         }
     };

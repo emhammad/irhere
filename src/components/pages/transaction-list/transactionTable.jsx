@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Table = () => {
   const [transaction, setTransaction] = useState([]);
@@ -11,13 +12,14 @@ const Table = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [totalPagesLength, setTotalPagesLength] = useState(0);
   const itemsPerPage = 10;
+  const navigate = useNavigate();
 
   const [searchTerms, setSearchTerms] = useState({
     id: "",
     name: "",
     email: "",
     amount: "",
-    Card: "", // Add Card for filtering by debit/credit
+    descrip: "", 
   });
 
   useEffect(() => {
@@ -25,17 +27,18 @@ const Table = () => {
       const token = user?.access_token;
       if (!token) {
         toast.error("No access token available");
+        navigate('/')
         return;
       }
 
       try {
         const params = {
-          page: currentPage,
+          //page: currentPage,
           id: searchTerms.id || undefined,
           name: searchTerms.name || undefined,
           email: searchTerms.email || undefined,
           amount: searchTerms.amount || undefined,
-          Card: searchTerms.Card || undefined,
+          descrip: searchTerms.descrip || undefined,
         };
 
         const response = await axios.get(`${url}/api/get_transaction_history/page/${currentPage}`, {
@@ -55,6 +58,7 @@ const Table = () => {
           setTotalItems(0);
           setTotalPagesLength(1);
         }
+        console.log(response.data)
       } catch (error) {
         if (error.response) {
           console.error("Response error:", error);
@@ -67,7 +71,7 @@ const Table = () => {
     };
 
     transactionData();
-  }, [user, currentPage, url, searchTerms]);
+  }, [user, currentPage, url, searchTerms , navigate]);
 
   const nextPage = () => {
     setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPagesLength));
@@ -84,8 +88,10 @@ const Table = () => {
       item.name &&
       item.email &&
       item.amount &&
+      item.descrip &&
       (item.id.toLowerCase().includes(searchTerms.id.toLowerCase()) &&
         item.name.toLowerCase().includes(searchTerms.name.toLowerCase()) &&
+        item.descrip.toLowerCase().includes(searchTerms.descrip.toLowerCase()) &&
         item.email.toLowerCase().includes(searchTerms.email.toLowerCase()) &&
         item.amount.toLowerCase().includes(searchTerms.amount.toLowerCase()))
     );
@@ -98,7 +104,7 @@ const Table = () => {
       [name]: value,
     }));
 
-    setCurrentPage(1); // Reset to first page when search terms change
+    // setCurrentPage(1); // Reset to first page when search terms change
   };
 
   const handleExportCSV = () => {
@@ -292,8 +298,8 @@ const Table = () => {
                           className="form-control"
                           name="descrip"
                           placeholder="Location..."
-                        // value={searchTerms.descrip}
-                        // onChange={handleChange}
+                        value={searchTerms.descrip}
+                        onChange={handleChange}
                         />
                       </div>
                     </td>

@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const Account = () => {
     const [menu, setMenu] = useState("accounts");
@@ -52,34 +53,41 @@ const Account = () => {
     );
 };
 
+
 const AccountSettings = () => {
-    const user = useSelector((state) => state.user?.user || []);
+    const user = useSelector((state) => state.user?.user || {});
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const [userData, setUserData] = useState({});
     const [initialData, setInitialData] = useState({});
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserData = async () => {
             const token = user?.access_token;
-            try {
-                const formData = new FormData();
-                formData.append("user_id", user.id);
-
-                const response = await axios.post(`${url}/api/fetch_user_info`, formData, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
-                setUserData(response.data);
-                setInitialData(response.data); // Store the initial data
-            } catch (error) {
-                console.log(error);
+            if (!token) {
+                toast.error('Access token expired.');
+                navigate('/');
+            } else {
+                try {
+                    const response = await axios.get(`${url}/api/fetch_admin_list`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                    });
+                    const adminIds = response.data.map(admin => admin.id);
+                    if (adminIds.includes(user.id)) {
+                        setUserData(user);
+                        setInitialData(user); // Set initial data
+                    }
+                } catch (error) {
+                    console.log('Error fetching admin list:', error);
+                }
             }
         };
 
         fetchUserData();
-    }, [user, url]);
+    }, [user, url, navigate]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -96,75 +104,61 @@ const AccountSettings = () => {
         const formData = new FormData();
         formData.append("user_id", user.id);
 
+        let nameChanged = false;
         let emailChanged = false;
         let phoneChanged = false;
 
+        if (userData.name !== initialData.name) {
+            formData.append("name", userData.name);
+            nameChanged = true;
+        }
+
         if (userData.email !== initialData.email) {
-            formData.append("new_email", userData.email);
+            formData.append("email", userData.email);
             emailChanged = true;
         }
 
         if (userData.phone_no !== initialData.phone_no) {
-            formData.append("new_phone_no", userData.phone_no);
+            formData.append("phone_no", userData.phone_no);
             phoneChanged = true;
         }
 
         try {
-            if (emailChanged === true) {
-                const updateEmail = await axios.post(`${url}/api/update_user_email`, formData, {
+            if (nameChanged || emailChanged || phoneChanged) {
+                console.log(formData);
+                const updateResponse = await axios.post(`${url}/api/update_user_info`, formData, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "multipart/form-data",
                     },
                 });
-                toast.success('Email updated successfully:', updateEmail.data);
-            }
-
-            if (phoneChanged === true) {
-                const updatePhoneNo = await axios.post(`${url}/api/update_user_phone_no`, formData, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data",
-                    },
-                });
-                toast.success('Phone No updated successfully:', updatePhoneNo.data);
+                console.log("Update response:", updateResponse);
+                toast.success("User information updated successfully");
+            } else {
+                toast.error("Nothing Changed");
             }
         } catch (error) {
             console.log('Error updating data:', error);
+            toast.error("An error occurred while updating data");
         }
     };
 
     return (
         <div id='hm_account'>
-            {/* Account settings component */}
             <div className="card mb-4">
                 <div className="card-body">
                     <form id="formAccountSettings" className="fv-plugins-bootstrap5 fv-plugins-framework" onSubmit={handleSubmit}>
                         <div className="row">
                             <div className="mb-3 col-md-6 fv-plugins-icon-container">
-                                <label htmlFor="firstName" className="form-label">First Name</label>
+                                <label htmlFor="name" className="form-label">Name</label>
                                 <input
                                     className="form-control"
                                     type="text"
-                                    id="firstName"
-                                    name="firstName"
+                                    id="name"
+                                    name="name"
                                     value={userData.name || ''}
                                     onChange={handleChange}
-                                    placeholder={initialData.name}
-                                />
-                                <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
-                            </div>
-
-                            <div className="mb-3 col-md-6 fv-plugins-icon-container">
-                                <label htmlFor="lastName" className="form-label">Last Name</label>
-                                <input
-                                    className="form-control"
-                                    type="text"
-                                    name="lastName"
-                                    id="lastName"
-                                    value={userData.lastName || ''}
-                                    onChange={handleChange}
-                                    placeholder={initialData.lastName}
+                                    placeholder={initialData.Name}
                                 />
                                 <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
                             </div>
@@ -208,6 +202,7 @@ const AccountSettings = () => {
         </div>
     );
 };
+
 
 const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
     const [formData, setFormData] = useState({

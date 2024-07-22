@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Table = () => {
   const user = useSelector((state) => state.user?.user || []);
@@ -12,6 +13,7 @@ const Table = () => {
   const itemsPerPage = 10; // Number of items to display per page
   const [stats, setStats] = useState(0);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const navigate = useNavigate();
 
   const [searchTerms, setSearchTerms] = useState({
     id: "",
@@ -24,7 +26,9 @@ const Table = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        throw new Error("No access token available");
+        toast.error("No access token available");
+        navigate('/');
+        return;
       }
 
       let params = {};
@@ -45,11 +49,11 @@ const Table = () => {
 
       const statistics = await axios.get(`${url}/api/dashboard_stats`, {
         headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         }
-    });
-    setStats(statistics.data.total_users);
+      });
+      setStats(statistics.data.total_users);
 
     } catch (error) {
       console.error("Error fetching users:", error);

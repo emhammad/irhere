@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const SearchValidation = () => {
     const [searchInput, setSearchInput] = useState("");
@@ -9,6 +11,7 @@ const SearchValidation = () => {
     const [error, setError] = useState("");
     const user = useSelector((state) => state.user?.user || []);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
+    const navigate = useNavigate();
 
     const handleSearchInputChange = async (e) => {
         const value = e.target.value;
@@ -21,7 +24,8 @@ const SearchValidation = () => {
 
                 const token = user?.access_token;
                 if (!token) {
-                    throw new Error("No access token available");
+                    toast.error("No access token available");
+                    navigate('/')
                 }
 
                 const formData = new FormData();

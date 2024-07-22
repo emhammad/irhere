@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Table = () => {
     const [loading, setLoading] = useState(true);
@@ -13,6 +14,7 @@ const Table = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [stats, setStats] = useState(0);
+    const navigate = useNavigate();
 
     const itemsPerPage = 10;
 
@@ -70,41 +72,46 @@ const Table = () => {
             }
         });
 
-        try {
-            const response = await axios.get(`${url}/api/get_certificate_list_all/page/${currentPage}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                params: {
-                    user_id: 10,
-                    ...params
-                },
-            });
+        if (!token) {
+            toast.error('Access token expired.')
+            navigate('/')
+        } else {
+            try {
+                const response = await axios.get(`${url}/api/get_certificate_list_all/page/${currentPage}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    params: {
+                        user_id: 10,
+                        ...params
+                    },
+                });
 
-            const statistics = await axios.get(`${url}/api/dashboard_stats`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data',
+                const statistics = await axios.get(`${url}/api/dashboard_stats`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+                setStats(statistics.data.total_validations);
+
+                if (response.status === 200) {
+                    const dataArray = Object.values(response.data.Data);
+                    setTableData(dataArray);
+                    setFilteredData(dataArray);
+                    setLoading(false);
+                    setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
+                    setTotalPagesLength(response.data.Page?.TotalPages || 1);
+                } else {
+                    setTotalItems(0);
+                    setTotalPagesLength(1);
+                    toast.error("Unexpected data format");
                 }
-            });
-            setStats(statistics.data.total_validations);
-
-            if (response.status === 200) {
-                const dataArray = Object.values(response.data.Data);
-                setTableData(dataArray);
-                setFilteredData(dataArray);
-                setLoading(false);
-                setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
-                setTotalPagesLength(response.data.Page?.TotalPages || 1);
-            } else {
-                setTotalItems(0);
-                setTotalPagesLength(1);
-                toast.error("Unexpected data format");
+            } catch (error) {
+                console.log(error);
+                toast.error("Failed to fetch data");
             }
-        } catch (error) {
-            console.log(error);
-            toast.error("Failed to fetch data");
         }
     };
 

@@ -6,7 +6,7 @@ const initialState = {
   user: null,
   loading: false,
   error: null,
-  success:false
+  success: false
 };
 const userSlice = createSlice({
   name: 'user',
@@ -21,13 +21,16 @@ const userSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
-    setSuccess:(state, action)=>{
-        state.success = action.payload;
+    setSuccess: (state, action) => {
+      state.success = action.payload;
+    },
+    signOut: (state, action) => {
+      state.user = null;
     }
   },
 });
 
-export const { setUser, setLoading, setError,setSuccess } = userSlice.actions;
+export const { setUser, setLoading, setError, setSuccess, signOut } = userSlice.actions;
 
 
 export default userSlice.reducer;

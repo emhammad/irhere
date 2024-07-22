@@ -1,12 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "../../../assets/vendor/css/pages/cards-advance.css";
 
 import Appcard from "./sub_components/app-card";
 import Dealchart from "./sub_components/deal-card";
 import Reportscharts from "./sub_components/reports-card";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.user?.user);
 
+  useEffect(() => {
+    const checkUserCredentials = () => {
+      if (!user) {
+        navigate("/");
+      }
+    };
+    checkUserCredentials();
+  }, [user, navigate]);
   return (
     <>
       <div className="container-xxl flex-grow-1">

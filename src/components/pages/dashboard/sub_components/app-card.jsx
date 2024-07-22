@@ -1,33 +1,41 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Appcard = () => {
     const user = useSelector((state) => state.user?.user || []);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const [stats, setStats] = useState(0);
+    const navigate = useNavigate()
 
     useEffect(() => {
         const glanceData = async () => {
             const token = user?.access_token;
-            try {
-                const formData = new FormData();
-                formData.append("apikey", "68685dc6-5fb7-46c6-8cd5-228fc33b5485");
+            if (!user) {
+                toast.error("Token Expired")
+                navigate('/')
+            } else {
+                try {
+                    const formData = new FormData();
+                    formData.append("apikey", "68685dc6-5fb7-46c6-8cd5-228fc33b5485");
 
-                const response = await axios.get(`${url}/api/dashboard_stats`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data',
-                    }
-                });
-                setStats(response.data);
+                    const response = await axios.get(`${url}/api/dashboard_stats`, {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'multipart/form-data',
+                        }
+                    });
+                    setStats(response.data);
 
-            } catch (error) {
-                console.log(error.message);
+                } catch (error) {
+                    console.log(error.message);
+                }
             }
         }
         glanceData();
-    }, [url, user]);
+    }, [url, user, navigate]);
 
     const data = [
         { id: 1, class: 'badge rounded bg-label-primary me-3 p-2', icon: <i className="ti ti-chart-pie-2 ti-sm"></i>, Heading: stats ? `${stats.total_validations}` : <small>Loading...</small>, title: 'Validations' },
