@@ -32,7 +32,7 @@ const Table = () => {
                     params.is_used = 0;
                 }
 
-                console.log(params);
+                console.log(currentPage);
 
                 const response = await axios.get(`${url}/api/get_voucher/page/${currentPage}`, {
                     headers: {
@@ -190,7 +190,7 @@ const Table = () => {
                                             </select>
                                         </td>
                                     </tr>
-                                    {voucher.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(item => (
+                                    {voucher.map(item => (
                                         <tr key={item.voucher_code}>
                                             <td><small>{item.voucher_code}</small></td>
                                             <td><small>{item.date}</small></td>

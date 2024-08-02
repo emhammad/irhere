@@ -14,7 +14,7 @@ import { setUser } from '../../../store/Slices/UserSlice';
 const Login = () => {
 
   const navigate = useNavigate();
-  const dispatch=useDispatch()
+  const dispatch = useDispatch()
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [data, setData] = useState({
     email: "",
@@ -39,11 +39,9 @@ const Login = () => {
     Object.keys(data).forEach(key => {
       formData.append(key, data[key]);
     });
-
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
-
       }
     };
     try {
@@ -69,8 +67,6 @@ const Login = () => {
         toast.error("An error occurred");
       }
     }
-
-
   }
   const togglePasswordVisibility = () => {
     setPasswordVisible((prevState) => !prevState);
@@ -99,7 +95,7 @@ const Login = () => {
                 <h3 className="mb-1">Welcome to IRhere! 👋🏻</h3>
                 <p className="mb-4">Please sign-in to your account and start the adventure</p>
 
-                <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit} >
+                <form id="formAuthentication" className="mb-3" onSubmit={handleSubmit}>
 
                   <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email or Username</label>

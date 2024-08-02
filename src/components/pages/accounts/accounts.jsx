@@ -214,6 +214,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const user = useSelector((state) => state.user?.user || []);
     const token = user?.access_token;
+    const navigate = useNavigate();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -235,13 +236,14 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
 
         try {
             // Prepare data to send to the API
-            const formDataToSend = new FormData();
-            formDataToSend.append('user_id', user.user_id); // Assuming user_id is available in your user object
-            formDataToSend.append('old_password', currentPassword);
-            formDataToSend.append('new_password', confirmPassword); // Use confirmPassword here, as it should match newPassword
+            const formData = new FormData();
+            formData.append('user_id', user.user_id); // Assuming user_id is available in your user object
+            formData.append('old_password', currentPassword);
+            formData.append('new_password', confirmPassword); // Use confirmPassword here, as it should match newPassword
 
             // Send POST request to update password API
-            const response = await axios.post(`${url}/api/update_password_admin`, formDataToSend, {
+            console.log(formData);
+            const response = await axios.post(`${url}/api/update_password_admin`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
@@ -250,6 +252,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
 
             console.log(response);
             toast.success('Password updated successfully');
+            navigate('/')
         } catch (error) {
             console.error(error);
             toast.error('Error updating password');

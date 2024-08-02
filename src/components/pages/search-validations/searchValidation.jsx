@@ -149,6 +149,10 @@ const SearchValidation = () => {
                                             <tr>
                                                 <td colSpan="5">{error}</td>
                                             </tr>
+                                        ) : searchInput.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="5">Enter data to search.</td>
+                                            </tr>
                                         ) : data.length > 0 ? (
                                             data.map((item) => (
                                                 <tr key={item.ver_id}>

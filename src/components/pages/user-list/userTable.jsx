@@ -14,6 +14,7 @@ const Table = () => {
   const [stats, setStats] = useState(0);
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const navigate = useNavigate();
+  const [error, setError] = useState(false);
 
   const [searchTerms, setSearchTerms] = useState({
     id: "",
@@ -57,7 +58,7 @@ const Table = () => {
 
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error(`Error fetching users: ${error.message}`);
+      setError(true)
     }
   };
 
@@ -208,41 +209,50 @@ const Table = () => {
                       </td>
                     ))}
                   </tr>
-                  {filterData &&
-                    filterData.map((item) => (
-                      <tr key={item.id}>
-                        <td>
-                          <small>{item.id}</small>
-                        </td>
-                        <td>
-                          <small>{item.name}</small>
-                        </td>
-                        <td>
-                          <small>{item.email}</small>
-                        </td>
-                        <td>
-                          <small>{item.phone_no}</small>
-                        </td>
-                        <td>
-                          <div className="dropdown">
-                            <button
-                              className="btn p-0"
-                              type="button"
-                              id="earningReportsId"
-                              data-bs-toggle="dropdown"
-                            >
-                              <i className="ti ti-dots-vertical ti-sm text-muted"></i>
-                            </button>
-                            <div className="dropdown-menu dropdown-menu-end py-2 rounded text-center">
-                              <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2">
-                                <i className="ti ti-trash hm-icon-size"></i>
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                  {error === true ?
+                    <tr>
+                      <td>
+                        loading...
+                      </td>
+                    </tr>
+                    :
+                    <>
+                      {filterData &&
+                        filterData.map((item) => (
+                          <tr key={item.id}>
+                            <td>
+                              <small>{item.id}</small>
+                            </td>
+                            <td>
+                              <small>{item.name}</small>
+                            </td>
+                            <td>
+                              <small>{item.email}</small>
+                            </td>
+                            <td>
+                              <small>{item.phone_no}</small>
+                            </td>
+                            <td>
+                              <div className="dropdown">
+                                <button
+                                  className="btn p-0"
+                                  type="button"
+                                  id="earningReportsId"
+                                  data-bs-toggle="dropdown"
+                                >
+                                  <i className="ti ti-dots-vertical ti-sm text-muted"></i>
+                                </button>
+                                <div className="dropdown-menu dropdown-menu-end py-2 rounded text-center">
+                                  <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2">
+                                    <i className="ti ti-trash hm-icon-size"></i>
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}</>
+                  }
                 </tbody>
               </table>
             </div>

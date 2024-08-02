@@ -1,23 +1,9 @@
 import { useState } from 'react';
+import ReactMap from './ReactMap';
 
 const MapView = () => {
     const [mapLoading, setMapLoading] = useState(true);
     const [mapError, setMapError] = useState(false);
-
-    const handleMapLoad = () => {
-        setMapLoading(false);
-    };
-
-    const handleMapError = () => {
-        setMapLoading(false);
-        setMapError(true);
-    };
-
-    const latitude = 0;
-    const longitude = 0;
-
-    const mapSrc = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2990.274257380938!2d${longitude - 0.01}!3d${latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89e52963ac45bbcb%3A0xf05e8d125e82af10!2sDos%20Mas!5e0!3m2!1sen!2sus!4v1671220374408!5m2!1sen!2sus`;
-
     return (
         <div className="container-xxl m-0 flex-grow-1">
             <div className='row pb-4 px-4'>
@@ -31,24 +17,13 @@ const MapView = () => {
                     <p>Map couldn't be loaded. Please try again later.</p>
                 </div>
             ) : (
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                <div style={{ position: 'relative', width: '100%', height: '100vh' }}>
                     {mapLoading && (
                         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
                             <p>Loading...</p>
                         </div>
                     )}
-                    <iframe
-                        src={mapSrc}
-                        width="100%"
-                        height="100%"
-                        style={{ border: "0" }}
-                        allowFullScreen=""
-                        loading="lazy"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        title='MapView'
-                        onLoad={handleMapLoad}
-                        onError={handleMapError}
-                    ></iframe>
+                    <ReactMap />
                 </div>
             )}
         </div>
