@@ -214,7 +214,8 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const user = useSelector((state) => state.user?.user || []);
     const token = user?.access_token;
-    const navigate = useNavigate();
+    const [apiResponse, setApiResponse] = useState();
+    const [newPasswordError, setNewPasswordError] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -222,27 +223,34 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
             ...formData,
             [name]: value,
         });
+
+        // If the new password field is being updated, clear the error state if it's not empty
+        if (name === 'confirmPassword' && value !== '') {
+            setNewPasswordError(false);
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const { currentPassword, newPassword, confirmPassword } = formData;
+        const { currentPassword, confirmPassword } = formData;
 
-        // Check if newPassword matches confirmPassword
-        if (newPassword !== confirmPassword) {
-            toast.error('New password and confirm password do not match');
+        // Check if the new password field is empty
+        if (!confirmPassword) {
+            setNewPasswordError(true);
             return;
         }
 
         try {
-            // Prepare data to send to the API
             const formData = new FormData();
-            formData.append('user_id', user.user_id); // Assuming user_id is available in your user object
+            formData.append('user_id', user.id); // Assuming user_id is available in your user object
             formData.append('old_password', currentPassword);
             formData.append('new_password', confirmPassword); // Use confirmPassword here, as it should match newPassword
 
-            // Send POST request to update password API
-            console.log(formData);
+            // Log all key-value pairs in the formData
+            formData.forEach((value, key) => {
+                console.log(`${key}: ${value}`);
+            });
+
             const response = await axios.post(`${url}/api/update_password_admin`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -250,9 +258,14 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
                 },
             });
 
-            console.log(response);
-            toast.success('Password updated successfully');
-            navigate('/')
+            setApiResponse(response.data.desc);
+            if (response.data.desc === "Password updated successfully.") {
+                setFormData({
+                    currentPassword: '',
+                    newPassword: '',
+                    confirmPassword: '',
+                });
+            }
         } catch (error) {
             console.error(error);
             toast.error('Error updating password');
@@ -269,9 +282,11 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
                         <h5 className="card-header">Change Password</h5>
                         <div className="card-body">
                             <form id="formAccountSettings" className="fv-plugins-bootstrap5 fv-plugins-framework" noValidate onSubmit={handleSubmit}>
+
                                 <div className="row">
+
                                     <div className="mb-3 col-md-6 form-password-toggle fv-plugins-icon-container">
-                                        <label className="form-label" htmlFor="currentPassword">Current Password</label>
+                                        <label className="form-label" htmlFor="currentPassword">Old Password</label>
                                         <div className="input-group input-group-merge has-validation">
                                             <input
                                                 className="form-control"
@@ -288,30 +303,9 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
                                         </div>
                                         <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
                                     </div>
-                                </div>
-
-                                <div className="row">
-                                    <div className="mb-3 col-md-6 form-password-toggle fv-plugins-icon-container">
-                                        <label className="form-label" htmlFor="newPassword">New Password</label>
-                                        <div className="input-group input-group-merge has-validation">
-                                            <input
-                                                className="form-control"
-                                                type={passwordVisible.newPassword ? "text" : "password"}
-                                                id="newPassword"
-                                                name="newPassword"
-                                                placeholder="············"
-                                                value={formData.newPassword}
-                                                onChange={handleInputChange}
-                                            />
-                                            <span className="input-group-text cursor-pointer" onClick={() => togglePasswordVisibility("newPassword")}>
-                                                <i className={`ti ${passwordVisible.newPassword ? 'ti-eye' : 'ti-eye-off'}`}></i>
-                                            </span>
-                                        </div>
-                                        <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
-                                    </div>
 
                                     <div className="mb-3 col-md-6 form-password-toggle fv-plugins-icon-container">
-                                        <label className="form-label" htmlFor="confirmPassword">Confirm New Password</label>
+                                        <label className="form-label" htmlFor="confirmPassword">New Password</label>
                                         <div className="input-group input-group-merge has-validation">
                                             <input
                                                 className="form-control"
@@ -329,12 +323,29 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
                                         <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
                                     </div>
 
+                                    <div className="col-md-12">
+                                        {newPasswordError &&
+                                            <span className='badge rounded bg-label-danger text-start py-3 mb-3 w-100'>
+                                                New password should not be empty.
+                                            </span>
+                                        }
+                                        {apiResponse === "Password updated successfully." ?
+                                            <span className='badge rounded bg-label-success text-start py-3 mb-3 w-100'>
+                                                {apiResponse}
+                                            </span>
+                                            :
+                                            <span className='badge rounded bg-label-danger text-start py-3 mb-3 w-100'>
+                                                {apiResponse}
+                                            </span>
+                                        }
+                                    </div>
+
                                     <div className="col-12 mb-4">
                                         <h6>Password Requirements:</h6>
                                         <ul className="ps-3 mb-0">
                                             <li className="mb-1">Minimum 8 characters long - the more, the better</li>
-                                            <li className="mb-1">At least one lowercase character</li>
-                                            <li>At least one number, symbol, or whitespace character</li>
+                                            {/* <li className="mb-1">At least one lowercase character</li>
+                                            <li>At least one number, symbol, or whitespace character</li> */}
                                         </ul>
                                     </div>
 
@@ -342,6 +353,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
                                         <button type="submit" className="btn btn-primary me-2 waves-effect waves-light">Save changes</button>
                                         <button type="reset" className="btn btn-label-secondary waves-effect">Cancel</button>
                                     </div>
+
                                 </div>
                                 <input type="hidden" />
                             </form>
