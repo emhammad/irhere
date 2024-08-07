@@ -35,7 +35,7 @@ const Table = () => {
           name: searchTerms.name || undefined,
           email: searchTerms.email || undefined,
           amount: searchTerms.amount || undefined,
-          descrip: searchTerms.descrip || undefined,
+          desc: searchTerms.descrip || undefined,
         };
 
         const response = await axios.get(`${url}/api/get_transaction_history/page/${currentPage}`, {

@@ -87,7 +87,8 @@ const Table = () => {
             ...prevData,
             [name]: value,
             ...(name === "status" && value === "expired" ? { expired: '0', is_used: '' } : {}),
-            ...(name === "status" && value === "is_used" ? { is_used: '0', expired: '' } : {})
+            ...(name === "status" && value === "is_used" ? { is_used: '0', expired: '' } : {}),
+            ...(name === "status" && value === "Select by expired & used" ? { expired: '', is_used: '' } : {})
         }));
     };
 
