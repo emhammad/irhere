@@ -15,6 +15,8 @@ import AppSetting from "./components/pages/app-settings/appSetting";
 import SearchValidation from "./components/pages/search-validations/searchValidation";
 import Registration from "./components/pages/Registration/registration";
 
+const knownPaths = ["/registration", "/dashboard", "/validation-list", "/transaction-list", "/user-list", "/voucher-list", "/map-view", "/account", "/app-setting", "/search-validation"];
+
 const App = () => {
   return (
     <>
@@ -27,18 +29,18 @@ const App = () => {
 };
 
 const AppContent = () => {
-
   const location = useLocation();
 
-
+  // Check if the current path is a known path
+  const isKnownPath = knownPaths.includes(location.pathname);
 
   return (
     <>
       <div className="layout-wrapper layout-content-navbar">
         <div className="layout-container">
-          {location.pathname === "/" || location.pathname === "*" || location.pathname === "/registration" ? "" : <Aside />}
+          {isKnownPath && <Aside />}
           <div className="layout-page">
-            {location.pathname === "/" || location.pathname === "*" || location.pathname === "/registration" ? "" : <Navbar />}
+            {isKnownPath && <Navbar />}
             <div className="content-wrapper">
               <Routes>
                 <Route path="/" element={<Login />} />
@@ -61,7 +63,7 @@ const AppContent = () => {
         <div className="layout-overlay layout-menu-toggle"></div>
       </div>
     </>
-  )
-}
+  );
+};
 
 export default App;

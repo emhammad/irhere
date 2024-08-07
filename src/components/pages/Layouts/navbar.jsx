@@ -13,54 +13,58 @@ const SidebarNavbar = () => {
   const [userName, setUserName] = useState();
   const url = process.env.REACT_APP_SERVER_DOMAIN;
 
+  const isActive = (pathname) => location.pathname === pathname;
 
-  const isActive = (pathname) => {
-    return location.pathname === pathname
-  }
-
+  // Handle redirection based on user authentication status
   useEffect(() => {
-    setUserName(user?.Name);
+    const token = user?.access_token;
+
+    if (token && location.pathname === "/") {
+      navigate("/dashboard");
+      return; // Return early to avoid further execution
+    }
+
+    // Fetch user data if not redirected
     const fetchUserData = async () => {
-      const token = user?.access_token;
       if (!token) {
         navigate('/');
-      } else {
-        try {
-          const response = await axios.get(`${url}/api/fetch_admin_list`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
+        return; // Return early if no token
+      }
 
-          const userObject = response.data.find(admin => admin.id === user.id);
+      try {
+        const response = await axios.get(`${url}/api/fetch_admin_list`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-          if (userObject) {
-            setUserName(userObject.name)
-          }
-        } catch (error) {
-          console.log('Error fetching admin list:', error);
+        const userObject = response.data.find(admin => admin.id === user.id);
+
+        if (userObject) {
+          setUserName(userObject.name);
         }
+      } catch (error) {
+        console.log('Error fetching admin list:', error);
       }
     };
-    fetchUserData()
-  }, [user, url, navigate])
 
+    fetchUserData();
+  }, [user, url, navigate, location.pathname]);
 
   const handleSignOutUser = () => {
     navigate("/");
-    toast.success('Logout successfully.')
+    toast.success('Logout successfully.');
     dispatch(signOut());
-  }
+  };
+
   return (
     <>
       {/* Navbar */}
       <nav className="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-transparent shadow-none m-0" id="layout-navbar">
         <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-
           <ul className="navbar-nav flex-row align-items-center ms-auto">
             <li className="nav-item navbar-dropdown dropdown-user dropdown">
-
               <Link className="nav-link dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                 <div className="avatar avatar-online">
                   <span className="avatar-initial rounded-circle bg-primary">{userName?.charAt(0)}</span>

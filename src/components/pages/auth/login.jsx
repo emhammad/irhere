@@ -1,5 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import '../../../assets/css/demo.css';
 import '../../../assets/vendor/css/core.css';
@@ -8,18 +8,28 @@ import '../../../assets/vendor/css/pages/page-auth.css';
 import IRhere_Logo from '../../../assets/irhere_images/Vector.png';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../../store/Slices/UserSlice';
 
 const Login = () => {
 
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user?.user || []);
+  const location = useLocation();
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [data, setData] = useState({
     email: "",
     password: ""
   })
+
+  useEffect(() => {
+    const token = user?.access_token;
+    if (token && location.pathname === "/") {
+      navigate("/dashboard");
+      return;
+    }
+  }, [location.pathname, navigate, user])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
