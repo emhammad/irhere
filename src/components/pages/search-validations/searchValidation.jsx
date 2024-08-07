@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const SearchValidation = () => {
@@ -12,6 +11,13 @@ const SearchValidation = () => {
     const user = useSelector((state) => state.user?.user || []);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const navigate = useNavigate();
+    const token = user?.access_token;
+
+    useEffect(() => {
+        if (!token) {
+            navigate('/');
+        }
+    }, [token, navigate])
 
     const handleSearchInputChange = async (e) => {
         const value = e.target.value;
@@ -21,12 +27,6 @@ const SearchValidation = () => {
             try {
                 setLoading(true);
                 setError("");
-
-                const token = user?.access_token;
-                if (!token) {
-                    toast.error("No access token available");
-                    navigate('/')
-                }
 
                 const formData = new FormData();
                 formData.append("search_ver_id", value);
@@ -54,37 +54,29 @@ const SearchValidation = () => {
     };
 
     const handleExportCSV = () => {
-        const csvContent = data && data?.length >= 0 && data?.map(item => [
-            item.voucher_code,
-            formatDate(item.date),
-            formatDate(item.valid_date),
-            item.amount,
-            item.is_used ? "Expired" : "Used"
-        ].join(',')).join('\n');
+        const headers = ["VID", "Name", "Email/Phone", "Date", "Status"];
+        const csvContent = [
+            headers.join(','),
+            ...data.map(item => [
+                item.ver_id,
+                item.name,
+                item.email,
+                item.date,
+                item.status ? "verified" : "unverified"
+            ].join(','))
+        ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'table_data.csv';
+        a.download = 'validation_list.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "Invalid date";
-
-        const [datePart, timePart] = dateString.split(' ');
-        if (!datePart || !timePart) return "Invalid date";
-
-        const [month, day, year] = datePart.split('-');
-        const [hour, minute, second] = timePart.split(':');
-        if (!month || !day || !year || !hour || !minute || !second) return "Invalid date";
-
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-    };
 
     return (
         <>

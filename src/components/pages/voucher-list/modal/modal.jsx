@@ -1,34 +1,34 @@
-import axios from 'axios';
-import { useEffect } from 'react';
+// import axios from 'axios';
+// import { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 // import toast from 'react-hot-toast';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 
 function MyVerticallyCenteredModal(props) {
-    const user = useSelector((state) => state.user?.user || []);
+    // const user = useSelector((state) => state.user?.user || []);
     // const [vocher, setVocher] = useState({
     //     vocher_code:""
     // });
-    const url = process.env.REACT_APP_SERVER_DOMAIN;
+    // const url = process.env.REACT_APP_SERVER_DOMAIN;
 
-    useEffect(() => {
-        const fetchVocher = async () => {
-            try {
-                const response = await axios.post(`${url}/api/get_voucher`, {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
-                console.log("Response data:", response.data);
-            } catch (error) {
-                // toast.error(error.message);
-                console.log(error.message);
-            }
-        };
-        fetchVocher();
-        // eslint-disable-next-line 
-    }, [user]);
+    // useEffect(() => {
+    //     const fetchVocher = async () => {
+    //         try {
+    //             const response = await axios.post(`${url}/api/get_voucher`, {
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                 },
+    //             });
+    //             console.log("Response data:", response.data);
+    //         } catch (error) {
+    //             // toast.error(error.message);
+    //             console.log(error.message);
+    //         }
+    //     };
+    //     fetchVocher();
+    //     // eslint-disable-next-line 
+    // }, [user]);
     return (
         <Modal
             {...props}

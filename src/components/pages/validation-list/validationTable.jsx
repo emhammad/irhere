@@ -34,7 +34,6 @@ const Table = () => {
                 ...prevData,
                 [name]: value === "1" ? true : value === "0" ? false : ''
             }));
-            console.log(e.target.value);
         } else {
             setSearchTerms(prevData => ({
                 ...prevData,
@@ -71,9 +70,7 @@ const Table = () => {
                 }
             }
         });
-
         if (!token) {
-            toast.error('Access token expired.')
             navigate('/')
         } else {
             try {
@@ -129,13 +126,19 @@ const Table = () => {
     };
 
     const handleExportCSV = () => {
-        const csvContent = tableData.map(item => [
-            item.voucher_code,
-            formatDate(item.date),
-            formatDate(item.valid_date),
-            item.amount,
-            item.is_used ? "Expired" : "Used"
-        ].join(',')).join('\n');
+        const headers = ['VID', 'Name', 'Email/Phone', 'Date', 'Status'];
+        const rows = tableData.map(item => [
+            item.ver_id,
+            item.name,
+            item.email,
+            item.date || '', // Include the date as it is, handle empty dates
+            item.status === "True" ? "Verified" : "Unverified"
+        ]);
+
+        const csvContent = [
+            headers.join(','), // Add headers
+            ...rows.map(row => row.join(',')) // Add rows
+        ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -146,18 +149,6 @@ const Table = () => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return ''; // handle empty or undefined dateString
-
-        const parts = dateString.split(' ');
-        if (parts.length !== 2) return ''; // handle unexpected format
-
-        const [datePart, timePart] = parts;
-        const [month, day, year] = datePart.split('-');
-        const [hour, minute, second] = timePart.split(':');
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     };
 
     return (

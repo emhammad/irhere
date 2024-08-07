@@ -65,7 +65,6 @@ const AccountSettings = () => {
         const fetchUserData = async () => {
             const token = user?.access_token;
             if (!token) {
-                toast.error('Access token expired.');
                 navigate('/');
             } else {
                 try {
@@ -75,10 +74,13 @@ const AccountSettings = () => {
                             "Content-Type": "application/json",
                         },
                     });
-                    const adminIds = response.data.map(admin => admin.id);
-                    if (adminIds.includes(user.id)) {
-                        setUserData(user);
-                        setInitialData(user); // Set initial data
+
+                    // const adminIds = response.data.map(admin => admin.id);  
+                    const userObject = response.data.find(admin => admin.id === user.id);
+
+                    if (userObject) {
+                        setUserData(userObject);
+                        setInitialData(userObject); // Set initial data
                     }
                 } catch (error) {
                     console.log('Error fetching admin list:', error);
@@ -125,15 +127,16 @@ const AccountSettings = () => {
 
         try {
             if (nameChanged || emailChanged || phoneChanged) {
-                console.log(formData);
                 const updateResponse = await axios.post(`${url}/api/update_user_info`, formData, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "multipart/form-data",
                     },
                 });
-                console.log("Update response:", updateResponse);
-                toast.success("User information updated successfully");
+
+                if (updateResponse.status === 200) {
+                    toast.success(updateResponse.data.desc);
+                }
             } else {
                 toast.error("Nothing Changed");
             }
@@ -158,7 +161,7 @@ const AccountSettings = () => {
                                     name="name"
                                     value={userData.name || ''}
                                     onChange={handleChange}
-                                    placeholder={initialData.Name}
+                                    placeholder={userData.name}
                                 />
                                 <div className="fv-plugins-message-container fv-plugins-message-container--enabled invalid-feedback"></div>
                             </div>
@@ -172,7 +175,7 @@ const AccountSettings = () => {
                                     name="email"
                                     value={userData.email || ''}
                                     onChange={handleChange}
-                                    placeholder={initialData.email}
+                                    placeholder={userData.email}
                                 />
                             </div>
 
@@ -186,7 +189,7 @@ const AccountSettings = () => {
                                         className="form-control"
                                         value={userData.phone_no || ''}
                                         onChange={handleChange}
-                                        placeholder={initialData.phone_no}
+                                        placeholder={userData.phone_no}
                                     />
                                 </div>
                             </div>
@@ -216,6 +219,7 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
     const token = user?.access_token;
     const [apiResponse, setApiResponse] = useState();
     const [newPasswordError, setNewPasswordError] = useState(false);
+    const [passLength, setMinLength] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -224,9 +228,16 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
             [name]: value,
         });
 
-        // If the new password field is being updated, clear the error state if it's not empty
-        if (name === 'confirmPassword' && value !== '') {
-            setNewPasswordError(false);
+        // Check password length and clear errors if valid
+        if (name === 'confirmPassword') {
+            if (value.length >= 8) {
+                setMinLength(false);
+            } else {
+                setMinLength(true);
+            }
+            if (value !== '') {
+                setNewPasswordError(false);
+            }
         }
     };
 
@@ -245,11 +256,6 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
             formData.append('user_id', user.id); // Assuming user_id is available in your user object
             formData.append('old_password', currentPassword);
             formData.append('new_password', confirmPassword); // Use confirmPassword here, as it should match newPassword
-
-            // Log all key-value pairs in the formData
-            formData.forEach((value, key) => {
-                console.log(`${key}: ${value}`);
-            });
 
             const response = await axios.post(`${url}/api/update_password_admin`, formData, {
                 headers: {
@@ -324,6 +330,11 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
                                     </div>
 
                                     <div className="col-md-12">
+                                        {passLength &&
+                                            <span className='badge rounded bg-label-danger text-start py-3 mb-3 w-100'>
+                                                New password should be minimum 8 characters long.
+                                            </span>
+                                        }
                                         {newPasswordError &&
                                             <span className='badge rounded bg-label-danger text-start py-3 mb-3 w-100'>
                                                 New password should not be empty.

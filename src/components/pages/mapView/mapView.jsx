@@ -4,6 +4,7 @@ import ReactMap from './ReactMap';
 const MapView = () => {
     const [mapLoading, setMapLoading] = useState(true);
     const [mapError, setMapError] = useState(false);
+    
     return (
         <div className="container-xxl m-0 flex-grow-1">
             <div className='row pb-4 px-4'>

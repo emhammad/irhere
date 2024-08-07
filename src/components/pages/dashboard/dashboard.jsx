@@ -15,6 +15,7 @@ function Dashboard() {
     const checkUserCredentials = () => {
       if (!user) {
         navigate("/");
+        return;
       }
     };
     checkUserCredentials();

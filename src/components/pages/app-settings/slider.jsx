@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import MuiSlider from '@mui/material/Slider';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const marks = [
   { value: 0, label: '0M' },
@@ -71,11 +72,12 @@ const SliderCustomized = () => {
   const [sliderValue, setSliderValue] = useState(0);
   const user = useSelector((state) => state.user?.user || []);
   const token = user?.access_token;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       if (!token) {
-        throw new Error("No access token available");
+        navigate('/');
       }
 
       try {
@@ -93,7 +95,7 @@ const SliderCustomized = () => {
     };
 
     fetchData();
-  }, [token]);
+  }, [token, navigate]);
 
   const update = async () => {
     const formData = new FormData();
@@ -106,8 +108,9 @@ const SliderCustomized = () => {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log(updateRadius.data.desc);
-      toast.success("Updated Successfully.");
+      if (updateRadius.status === 200) {
+        toast.success("Updated Successfully.");
+      }
     } catch (error) {
       toast.error('Error updating verification radius');
       console.log(error);

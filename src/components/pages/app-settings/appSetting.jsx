@@ -28,7 +28,6 @@ const AppSetting = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        toast.error("Access token Expired");
         navigate('/')
       }
 
@@ -58,15 +57,17 @@ const AppSetting = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        throw new Error("No access token available");
+        navigate('/');
       }
-      await axios.post(updateTemsApi, terms, {
+      const response = await axios.post(updateTemsApi, terms, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       })
-      toast.success("Terms are updated successfully ")
+      if (response.status === 200) {
+        toast.success("Terms are updated successfully.")
+      }
       await fetchTerms()
     } catch (error) {
       toast.error(error.message)

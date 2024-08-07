@@ -1,6 +1,5 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -19,21 +18,19 @@ const Table = () => {
     name: "",
     email: "",
     amount: "",
-    descrip: "", 
+    descrip: "",
   });
 
   useEffect(() => {
     const transactionData = async () => {
       const token = user?.access_token;
       if (!token) {
-        toast.error("No access token available");
-        navigate('/')
+        navigate('/');
         return;
       }
 
       try {
         const params = {
-          //page: currentPage,
           id: searchTerms.id || undefined,
           name: searchTerms.name || undefined,
           email: searchTerms.email || undefined,
@@ -58,20 +55,13 @@ const Table = () => {
           setTotalItems(0);
           setTotalPagesLength(1);
         }
-        console.log(response.data)
       } catch (error) {
-        if (error.response) {
-          console.error("Response error:", error);
-        } else if (error.request) {
-          console.error("Request error:", error);
-        } else {
-          console.error("Error:", error);
-        }
+        console.error("Error:", error);
       }
     };
 
     transactionData();
-  }, [user, currentPage, url, searchTerms , navigate]);
+  }, [user, currentPage, url, searchTerms, navigate]);
 
   const nextPage = () => {
     setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPagesLength));
@@ -103,21 +93,25 @@ const Table = () => {
       ...prevData,
       [name]: value,
     }));
-
-    // setCurrentPage(1); // Reset to first page when search terms change
   };
 
   const handleExportCSV = () => {
     if (!transaction.length) return;
 
-    const csvContent = transaction
-      .map(
-        (item) =>
-          `${item.id},${formatDate(item.date)},${formatDate(
-            item.valid_date
-          )},${item.amount},${item.is_used ? "Expired" : "Used"}`
-      )
-      .join("\n");
+    const headers = ["Transaction ID", "Name", "Email/Phone", "Amount", "Location", "Balance"];
+    const rows = transaction.map(item => [
+      item.id,
+      item.name,
+      item.email,
+      item.amount,
+      `"${item.descrip.replace(/"/g, '""')}"`, // Escape double quotes within the description
+      item.balance
+    ]);
+
+    const csvContent = [
+      headers.join(','), // Add headers
+      ...rows.map(row => row.join(',')) // Add rows
+    ].join('\n');
 
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -130,27 +124,12 @@ const Table = () => {
     URL.revokeObjectURL(url);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) {
-      return "";
-    }
-    const [datePart, timePart] = dateString.split(" ");
-    if (!datePart || !timePart) {
-      return dateString;
-    }
-    const [month, day, year] = datePart.split("-");
-    const [hour, minute, second] = timePart.split(":");
-    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-  };
 
   return (
     <div>
       <div className="card">
         <div className="card-datatable pt-0">
-          <div
-            id="DataTables_Table_0_wrapper"
-            className="dataTables_wrapper dt-bootstrap5 no-footer"
-          >
+          <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
             <div className="card-header header-flex d-flex justify-content-between p-3">
               <div className="head-label d-flex align-items-center">
                 <h5 className="card-title mb-0">Transaction List</h5>
@@ -158,7 +137,7 @@ const Table = () => {
               <div className="dt-action-buttons text-end pt-3 pt-md-0">
                 <div className="dt-buttons">
                   <button
-                    className="dt-button buttons-collection  btn btn-label-primary me-2 waves-effect waves-light"
+                    className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light"
                     aria-controls="DataTables_Table_0"
                     type="button"
                     aria-haspopup="dialog"
@@ -177,9 +156,7 @@ const Table = () => {
                   >
                     <span>
                       <i className="menu-icon tf-icons ti ti-calendar"></i>
-                      <span className="d-none d-sm-inline-block">
-                        Search By Dates
-                      </span>
+                      <span className="d-none d-sm-inline-block">Search By Dates</span>
                     </span>
                   </button>
                 </div>
@@ -193,7 +170,6 @@ const Table = () => {
                     <th style={{ width: "10%" }}>Name</th>
                     <th>Email/Phone</th>
                     <th>Amount</th>
-                    {/* <th>Debit/Credit</th> */}
                     <th style={{ width: "17%" }}>Location</th>
                     <th>Balance</th>
                     <th>Action</th>
@@ -203,10 +179,7 @@ const Table = () => {
                   <tr>
                     <td>
                       <div className="input-group input-group-merge">
-                        <span
-                          className="input-group-text p-2"
-                          id="basic-addon-search"
-                        >
+                        <span className="input-group-text p-2" id="basic-addon-search">
                           <i className="ti ti-search"></i>
                         </span>
                         <input
@@ -221,10 +194,7 @@ const Table = () => {
                     </td>
                     <td>
                       <div className="input-group input-group-merge">
-                        <span
-                          className="input-group-text p-2"
-                          id="basic-addon-search"
-                        >
+                        <span className="input-group-text p-2" id="basic-addon-search">
                           <i className="ti ti-search"></i>
                         </span>
                         <input
@@ -239,10 +209,7 @@ const Table = () => {
                     </td>
                     <td>
                       <div className="input-group input-group-merge">
-                        <span
-                          className="input-group-text p-2"
-                          id="basic-addon-search"
-                        >
+                        <span className="input-group-text p-2" id="basic-addon-search">
                           <i className="ti ti-search"></i>
                         </span>
                         <input
@@ -257,10 +224,7 @@ const Table = () => {
                     </td>
                     <td>
                       <div className="input-group input-group-merge">
-                        <span
-                          className="input-group-text p-2"
-                          id="basic-addon-search"
-                        >
+                        <span className="input-group-text p-2" id="basic-addon-search">
                           <i className="ti ti-search"></i>
                         </span>
                         <input
@@ -273,24 +237,9 @@ const Table = () => {
                         />
                       </div>
                     </td>
-                    {/* <td>
-                      <select
-                        className="form-select rounded"
-                        name="Card"
-                        value={searchTerms.Card}
-                        onChange={handleChange}
-                      >
-                        <option value="">Accounts</option>
-                        <option value="debit">Debit</option>
-                        <option value="credit">Credit</option>
-                      </select>
-                    </td> */}
                     <td>
                       <div className="input-group input-group-merge">
-                        <span
-                          className="input-group-text p-2"
-                          id="basic-addon-search"
-                        >
+                        <span className="input-group-text p-2" id="basic-addon-search">
                           <i className="ti ti-search"></i>
                         </span>
                         <input
@@ -298,14 +247,12 @@ const Table = () => {
                           className="form-control"
                           name="descrip"
                           placeholder="Location..."
-                        value={searchTerms.descrip}
-                        onChange={handleChange}
+                          value={searchTerms.descrip}
+                          onChange={handleChange}
                         />
                       </div>
                     </td>
-                    <td>
-
-                    </td>
+                    <td></td>
                   </tr>
                   {filterData && filterData.map((item) => (
                     <tr key={item.id}>
@@ -313,29 +260,14 @@ const Table = () => {
                       <td><small>{item.name}</small></td>
                       <td><small>{item.email}</small></td>
                       <td><small>{item.amount}</small></td>
-                      {/* <td>
-                        <span
-                          className={`badge ${item.Card === "Credit"
-                            ? "bg-label-success"
-                            : "bg-label-danger"
-                            }`}
-                        >
-                          {item.Card === "Credit" ? "Credit" : "Debit"}
-                        </span>
-                      </td> */}
-                      <td className=""><small>{item.descrip}</small></td>
+                      <td><small>{item.descrip}</small></td>
                       <td><small>{item.balance}</small></td>
                       <td>
                         <div className="dropdown">
-                          <button
-                            className="btn p-0"
-                            type="button"
-                            id="earningReportsId"
-                            data-bs-toggle="dropdown"
-                          >
+                          <button className="btn p-0" type="button" id="earningReportsId" data-bs-toggle="dropdown">
                             <i className="ti ti-dots-vertical ti-sm text-muted"></i>
                           </button>
-                          <div className="dropdown-menu dropdown-menu-end py-2 px-4 rounded bg-label-primary text-center  ">
+                          <div className="dropdown-menu dropdown-menu-end py-2 px-4 rounded bg-label-primary text-center">
                             <button className="dropdown-item p-0 m-0 w-auto text-primary d-flex align-items-center">
                               <i className="ti ti-currency-dollar ti-sm"></i>
                               Refund
@@ -350,15 +282,8 @@ const Table = () => {
             </div>
             <div className="row mt-3 mb-3 me-3">
               <div className="d-flex align-items-center justify-content-end">
-                <div
-                  className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4"
-                  id="DataTables_Table_0_paginate"
-                >
-                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1
-                    }-${Math.min(
-                      currentPage * itemsPerPage,
-                      currentPage * totalItems
-                    )} of ${totalPagesLength}`}</p>
+                <div className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4" id="DataTables_Table_0_paginate">
+                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalPagesLength}`}</p>
                   <button
                     className={`p-2 border-0 bg-transparent`}
                     onClick={prevPage}
@@ -371,7 +296,7 @@ const Table = () => {
                     onClick={nextPage}
                     disabled={currentPage === totalPagesLength}
                   >
-                    <i className={`fas fa-angle-right cursor-pointer  ${currentPage === totalPagesLength ? 'text-muted' : ''}`}></i>
+                    <i className={`fas fa-angle-right cursor-pointer ${currentPage === totalPagesLength ? 'text-muted' : ''}`}></i>
                   </button>
                 </div>
               </div>

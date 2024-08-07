@@ -1,21 +1,56 @@
-import React from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { signOut } from "../../../store/Slices/UserSlice";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const SidebarNavbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+  const user = useSelector((state) => state.user?.user || []);
   const location = useLocation();
+  const [userName, setUserName] = useState();
+  const url = process.env.REACT_APP_SERVER_DOMAIN;
+
 
   const isActive = (pathname) => {
     return location.pathname === pathname
   }
 
+  useEffect(() => {
+    setUserName(user?.Name);
+    const fetchUserData = async () => {
+      const token = user?.access_token;
+      if (!token) {
+        navigate('/');
+      } else {
+        try {
+          const response = await axios.get(`${url}/api/fetch_admin_list`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const userObject = response.data.find(admin => admin.id === user.id);
+
+          if (userObject) {
+            setUserName(userObject.name)
+          }
+        } catch (error) {
+          console.log('Error fetching admin list:', error);
+        }
+      }
+    };
+    fetchUserData()
+  }, [user, url, navigate])
+
+
   const handleSignOutUser = () => {
+    navigate("/");
+    toast.success('Logout successfully.')
     dispatch(signOut());
-    navigate("/")
   }
   return (
     <>
@@ -28,24 +63,24 @@ const SidebarNavbar = () => {
 
               <Link className="nav-link dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                 <div className="avatar avatar-online">
-                  <span className="avatar-initial rounded-circle bg-primary">A</span>
+                  <span className="avatar-initial rounded-circle bg-primary">{userName?.charAt(0)}</span>
                 </div>
               </Link>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li>
-                  <Link className="dropdown-item">
+                  <div className="dropdown-item">
                     <div className="d-flex">
                       <div className="flex-shrink-0 me-3">
                         <div className="avatar avatar-online">
-                          <span className="avatar-initial rounded-circle bg-primary">A</span>
+                          <span className="avatar-initial rounded-circle bg-primary">{userName?.charAt(0)}</span>
                         </div>
                       </div>
                       <div className="flex-grow-1">
-                        <span className="fw-medium d-block">Samuel Franks</span>
+                        <span className="fw-medium d-block">{userName}</span>
                         <small className="text-muted">Admin</small>
                       </div>
                     </div>
-                  </Link>
+                  </div>
                 </li>
                 <li>
                   <div className="dropdown-divider"></div>

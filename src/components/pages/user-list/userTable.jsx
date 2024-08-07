@@ -27,7 +27,6 @@ const Table = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        toast.error("No access token available");
         navigate('/');
         return;
       }
@@ -107,13 +106,8 @@ const Table = () => {
       return;
     }
 
-    const csvContent = User.Data.map(item => [
-      item.voucher_code,
-      formatDate(item.date),
-      formatDate(item.valid_date),
-      item.amount,
-      item.is_used ? "Expired" : "Used"
-    ].join(',')).join('\n');
+    const headers = ["IRhere Number", "Name", "Email/Phone", "Phone"];
+    const csvContent = [headers.join(',')].join('\n'); // Only headers
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -126,15 +120,6 @@ const Table = () => {
     URL.revokeObjectURL(url);
   };
 
-  const formatDate = (dateString) => {
-    if (!dateString) {
-      return "";
-    }
-    const [datePart, timePart] = dateString.split(' ');
-    const [month, day, year] = datePart.split('-');
-    const [hour, minute, second] = timePart.split(':');
-    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-  };
 
   return (
     <div>

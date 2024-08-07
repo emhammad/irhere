@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Table = () => {
-    const user = useSelector((state) => state.user?.user || []);
+    const user = useSelector((state) => state.user?.user || {});
     const [voucher, setVoucher] = useState([]);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [stats, setStats] = useState(0);
+    const navigate = useNavigate()
 
     const itemsPerPage = 10;
 
@@ -19,9 +21,15 @@ const Table = () => {
         is_used: '',
     });
 
+    const token = user?.access_token;
+
     useEffect(() => {
+
+        if (!token) {
+            navigate('/');
+            return;
+        }
         const fetchVoucher = async () => {
-            const token = user?.access_token;
             try {
                 const params = {};
 
@@ -31,8 +39,6 @@ const Table = () => {
                 } else if (searchTerms.is_used) {
                     params.is_used = 0;
                 }
-
-                console.log(currentPage);
 
                 const response = await axios.get(`${url}/api/get_voucher/page/${currentPage}`, {
                     headers: {
@@ -64,7 +70,7 @@ const Table = () => {
             }
         };
         fetchVoucher();
-    }, [currentPage, user, url, searchTerms]);
+    }, [currentPage, user, url, searchTerms, token, navigate]);
 
     const nextPage = () => {
         setCurrentPage((prevPage) => Math.min(prevPage + 1, totalPagesLength));
@@ -76,36 +82,27 @@ const Table = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        console.log("Name: " + name);
-        console.log("Value: " + value);
 
         setSearchTerms(prevData => ({
             ...prevData,
-            expired: '',
-            is_used: ''
+            [name]: value,
+            ...(name === "status" && value === "expired" ? { expired: '0', is_used: '' } : {}),
+            ...(name === "status" && value === "is_used" ? { is_used: '0', expired: '' } : {})
         }));
-
-        if (value === "expired") {
-            setSearchTerms(prevData => ({
-                ...prevData,
-                expired: '0',
-            }));
-        } else if (value === "is_used") {
-            setSearchTerms(prevData => ({
-                ...prevData,
-                is_used: '0'
-            }));
-        }
     };
 
     const handleExportCSV = () => {
-        const csvContent = voucher.map(item => [
-            item.voucher_code,
-            formatDate(item.date),
-            formatDate(item.valid_date),
-            item.amount,
-            item.is_used ? "Expired" : "Used"
-        ].join(',')).join('\n');
+        const headers = ["Voucher Code", "Date", "Expiry Date", "Amount", "Status"];
+        const csvContent = [
+            headers.join(','),
+            ...voucher.map(item => [
+                item.voucher_code,
+                item.date,
+                item.valid_date,
+                item.amount,
+                item.is_used ? "Expired" : "Used"
+            ].join(','))
+        ].join('\n');
 
         const blob = new Blob([csvContent], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -118,12 +115,7 @@ const Table = () => {
         URL.revokeObjectURL(url);
     };
 
-    const formatDate = (dateString) => {
-        const [datePart, timePart] = dateString.split(' ');
-        const [month, day, year] = datePart.split('-');
-        const [hour, minute, second] = timePart.split(':');
-        return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-    };
+
 
     return (
         <div className="card">

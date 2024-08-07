@@ -14,8 +14,7 @@ const Reportscharts = () => {
     const glanceData = async () => {
       const token = user?.access_token;
       try {
-        const formData = new FormData();
-        formData.append("apikey", "68685dc6-5fb7-46c6-8cd5-228fc33b5485");
+
 
         const response = await axios.get(`${url}/api/average_revenue_by_month`, {
           headers: {
