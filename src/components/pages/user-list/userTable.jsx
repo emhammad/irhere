@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FaCaretDown } from "react-icons/fa";
 
 const Table = () => {
   const user = useSelector((state) => state.user?.user || []);
@@ -15,6 +16,7 @@ const Table = () => {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const navigate = useNavigate();
   const [error, setError] = useState(false);
+  const dateInputRef = useRef(null);
 
   const [searchTerms, setSearchTerms] = useState({
     id: "",
@@ -113,12 +115,18 @@ const Table = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'table_data.csv';
+    a.download = 'User List.csv';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  const handleButtonClick = () => {
+    if (dateInputRef.current) {
+      dateInputRef.current.showPicker();
+    }
+  }
 
 
   return (
@@ -126,7 +134,7 @@ const Table = () => {
       <div className="card">
         <div className="card-datatable pt-0">
           <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
-            <div className="card-header header-flex d-flex justify-content-between p-3">
+            <div className="card-header header-flex d-flex justify-content-between p-3 flex-wrap">
               <div className="head-label d-flex align-items-center">
                 <h5 className="card-title mb-0">User List</h5>
               </div>
@@ -141,22 +149,36 @@ const Table = () => {
                     onClick={handleExportCSV}
                   >
                     <span>
-                      <i className="ti ti-upload me-1 ti-xs"></i>
+                      <i className="ti ti-upload me-1"></i>
                       <span className="d-none d-sm-inline-block">Export</span>
                     </span>
                   </button>
-                  <button
-                    className="dt-button create-new btn btn-primary waves-effect waves-light"
-                    aria-controls="DataTables_Table_0"
-                    type="button"
-                  >
-                    <span>
+                  <div style={{ position: 'relative', display: 'inline-block' }}>
+                    <button
+                      onClick={handleButtonClick}
+                      className="dt-button create-new btn btn-primary waves-effect waves-light"
+                      aria-controls="DataTables_Table_0"
+                      type="button"
+                    >
                       <i className="menu-icon tf-icons ti ti-calendar"></i>
-                      <span className="d-none d-sm-inline-block">
-                        Search By Dates
-                      </span>
-                    </span>
-                  </button>
+                      <span className="d-none d-sm-inline-block">Search By Dates</span>
+                    </button>
+
+                    <input
+                      type="date"
+                      id='datePicker'
+                      ref={dateInputRef}
+                      onClick={handleButtonClick}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        zIndex: 1112,
+                        opacity: 0,
+                      }}
+                      onChange={(e) => console.log(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -196,9 +218,7 @@ const Table = () => {
                   </tr>
                   {error === true ?
                     <tr>
-                      <td>
-                        loading...
-                      </td>
+                      <td colSpan="6">No records found</td>
                     </tr>
                     :
                     <>
@@ -241,9 +261,25 @@ const Table = () => {
                 </tbody>
               </table>
             </div>
-            <div className="row mt-3 mb-3">
-              <div className="col-lg-9 col-md-6 col-sm-12 d-flex align-items-center justify-content-lg-end "></div>
-              <div className="col-lg-3 col-md-6 col-sm-12 d-flex align-items-center justify-content-center">
+            <div className="mt-3 mb-3 me-3 d-flex justify-content-end align-items-center flex-wrap" style={{ color: "#5d596c" }}>
+              <div className="">
+                <div className=' d-flex justify-content-end align-items-center'>
+                  <div class="dataTables_length d-flex" id="DataTables_Table_1_length pe-3">
+                    <span className="d-flex align-items-center">Rows per page:</span>
+                    <div class="btn-group">
+                      <button type="button" style={{ color: "#5d596c" }} class="bg-transparent border-0  waves-effect waves-light px-3 d-flex align-items-center gap-1" name="DataTables_Table_1_length" aria-controls="DataTables_Table_1" data-bs-toggle="dropdown" aria-expanded="false">
+                        10 <FaCaretDown />
+                      </button>
+                      <ul class="dropdown-menu" style={{ minWidth: "max-content" }}>
+                        <li class="dropdown-item">15</li>
+                        <li class="dropdown-item">20</li>
+                        <li class="dropdown-item">25</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="">
                 <div
                   className="dataTables_paginate paging_simple_numbers d-flex align-items-center"
                   id="DataTables_Table_0_paginate"

@@ -14,14 +14,13 @@ const Reportscharts = () => {
     const glanceData = async () => {
       const token = user?.access_token;
       try {
-
-
         const response = await axios.get(`${url}/api/average_revenue_by_month`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data',
           }
         });
+
         // Transform the data
         const transformedData = response.data.avg_revenue_by_month.map(item => {
           const date = new Date(item.month);
@@ -38,9 +37,8 @@ const Reportscharts = () => {
     glanceData();
   }, [url, user]);
 
-
   const renderCustomBarLabel = ({ payload, x, y, width, height, value }) => {
-    return <text x={x + width / 2} y={y} fill="#666" textAnchor="middle" dy={-6}>{`${value}k`}</text>;
+    return <text x={x + width / 2} y={y} fill="#666" textAnchor="middle" dy={-6}>{`${value}`}</text>;
   };
 
   return (
@@ -56,7 +54,11 @@ const Reportscharts = () => {
         <div className="card-body chart">
           <BarChart width={600} height={300} data={chartValue}>
             <XAxis dataKey="name" stroke='' />
-            <YAxis stroke='' />
+            <YAxis
+              stroke=''
+              // domain={[0, 'dataMax + 100']} // Increase the max value by 100
+              tickCount={6} // Adjust the number of ticks
+            />
             <Bar dataKey="uv" barSize={30} fill="#5C81E4 " label={renderCustomBarLabel} />
           </BarChart>
         </div>

@@ -102,7 +102,7 @@ const Table = () => {
                                     <button className="dt-button buttons-collection  btn btn-label-primary me-2 waves-effect waves-light" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false" 
                                     onClick={handleExportCSV}>
                                         <span>
-                                            <i className="ti ti-upload me-1 ti-xs"></i>
+                                            <i className="ti ti-upload me-1"></i>
                                             <span className="d-none d-sm-inline-block">Export</span>
                                         </span>
                                     </button>

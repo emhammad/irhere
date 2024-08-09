@@ -65,7 +65,7 @@ const Login = () => {
         navigate('/dashboard');
       } else {
         // Show error for incorrect username/password or other errors
-        toast.error(response.data.desc || "An error occurred");
+        console.log(response.data.desc || "An error occurred");
       }
     } catch (error) {
       // Error occurred while making the request

@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaCaretDown } from "react-icons/fa";
+
 
 const Table = () => {
     const [loading, setLoading] = useState(true);
@@ -13,7 +14,8 @@ const Table = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
-    const [stats, setStats] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+    const dateInputRef = useRef(null);
     const navigate = useNavigate();
 
     const itemsPerPage = 10;
@@ -23,6 +25,7 @@ const Table = () => {
         Name: '',
         Email: '',
         Date: '',
+        address: "",
         true_status: ''
     });
 
@@ -46,7 +49,8 @@ const Table = () => {
         { id: 1, name: "ver_id", placeholder: "VID...", type: "text" },
         { id: 2, name: "Name", placeholder: "Name...", type: "text" },
         { id: 3, name: "Email", placeholder: "Email/Phone...", type: "text" },
-        { id: 4, name: "Date", placeholder: "Date...", type: "text" },
+        { id: 4, name: "Date", placeholder: "Date...", type: "date" },
+        { id: 4, name: "address", placeholder: "address...", type: "text" },
         {
             id: 5, name: "true_status", placeholder: "Select Status...", type: "select", options: [
                 { value: "", label: "Select Status" },
@@ -85,13 +89,7 @@ const Table = () => {
                     },
                 });
 
-                const statistics = await axios.get(`${url}/api/dashboard_stats`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data',
-                    }
-                });
-                setStats(statistics.data.total_validations);
+                setTotalPages(response.data.Page.TotalPages);
 
                 if (response.status === 200) {
                     const dataArray = Object.values(response.data.Data);
@@ -100,14 +98,14 @@ const Table = () => {
                     setLoading(false);
                     setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
                     setTotalPagesLength(response.data.Page?.TotalPages || 1);
+
                 } else {
                     setTotalItems(0);
                     setTotalPagesLength(1);
-                    toast.error("Unexpected data format");
                 }
+
             } catch (error) {
                 console.log(error);
-                toast.error("Failed to fetch data");
             }
         }
     };
@@ -144,18 +142,24 @@ const Table = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'table_data.csv';
+        a.download = 'Validation list.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
+    const handleButtonClick = () => {
+        if (dateInputRef.current) {
+            dateInputRef.current.showPicker();
+        }
+    }
+
     return (
         <div className="card">
             <div className="card-datatable pt-0">
                 <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
-                    <div className="card-header header-flex d-flex justify-content-between p-3">
+                    <div className="card-header header-flex d-flex justify-content-between p-3 flex-wrap">
                         <div className="head-label d-flex align-items-center">
                             <h5 className="card-title mb-0">List Of Validations</h5>
                         </div>
@@ -163,16 +167,36 @@ const Table = () => {
                             <div className="dt-buttons">
                                 <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light" onClick={handleExportCSV} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
                                     <span>
-                                        <i className="ti ti-upload me-1 ti-xs"></i>
+                                        <i className="ti ti-upload me-1"></i>
                                         <span className="d-none d-sm-inline-block">Export</span>
                                     </span>
                                 </button>
-                                <button className="dt-button create-new btn btn-primary waves-effect waves-light" aria-controls="DataTables_Table_0" type="button">
-                                    <span>
+                                <div style={{ position: 'relative', display: 'inline-block' }}>
+                                    <button
+                                        onClick={handleButtonClick}
+                                        className="dt-button create-new btn btn-primary waves-effect waves-light"
+                                        aria-controls="DataTables_Table_0"
+                                        type="button"
+                                    >
                                         <i className="menu-icon tf-icons ti ti-calendar"></i>
                                         <span className="d-none d-sm-inline-block">Search By Dates</span>
-                                    </span>
-                                </button>
+                                    </button>
+
+                                    <input
+                                        type="date"
+                                        id='datePicker'
+                                        ref={dateInputRef}
+                                        onClick={handleButtonClick}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            zIndex: 1112,
+                                            opacity: 0,
+                                        }}
+                                        onChange={(e) => console.log(e.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -185,6 +209,7 @@ const Table = () => {
                                         <th>Name</th>
                                         <th>Email/Phone</th>
                                         <th>Date</th>
+                                        <th>Address</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -193,11 +218,11 @@ const Table = () => {
                                     <tr className='input-row'>
                                         {mapFields.map(field => (
                                             <th key={field.id}>
-                                                {field.type === "text" ? (
+                                                {field.type === "text" || field.type === "date" ? (
                                                     <div className="input-group input-group-merge">
                                                         <span className="input-group-text p-2" id={`basic-addon-search-${field.name}`}><i className="ti ti-search"></i></span>
                                                         <input
-                                                            type="text"
+                                                            type={field.type}
                                                             className="form-control"
                                                             placeholder={field.placeholder}
                                                             name={field.name}
@@ -225,7 +250,7 @@ const Table = () => {
                                     </tr>
                                     {loading ? (
                                         <tr>
-                                            <td colSpan="5">Loading ...</td>
+                                            <td colSpan="6">Loading ...</td>
                                         </tr>
                                     ) : (
                                         filteredData.length > 0 ? filteredData.map((item, i) => (
@@ -233,7 +258,10 @@ const Table = () => {
                                                 <td><small>{item.ver_id}</small></td>
                                                 <td><small>{item.name}</small></td>
                                                 <td><small>{item.email}</small></td>
-                                                <td><small>{item.date}</small></td>
+                                                <td><small>
+                                                    {new Date(item.date).toLocaleDateString()} {new Date(item.date).toLocaleTimeString()}
+                                                </small></td>
+                                                <td><small>{item.address}</small></td>
                                                 <td>
                                                     <span className={`badge ${item.status === "True" ? "bg-label-success" : "bg-label-danger"}`}>
                                                         {item.status === "True" ? "verified" : "unverified"}
@@ -249,31 +277,50 @@ const Table = () => {
                                 </tbody>
                             </table>
                         </div>
-                        <div className="row mt-3 mb-3 me-3">
-                            <div className="d-flex align-items-center justify-content-end">
-                                <div
-                                    className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4"
-                                    id="DataTables_Table_0_paginate"
-                                >
-                                    <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1
-                                        }-${Math.min(
-                                            currentPage * itemsPerPage,
-                                            totalItems
-                                        )} of ${stats}`}</p>
-                                    <button
-                                        className={`p-2 border-0 bg-transparent`}
-                                        onClick={prevPage}
-                                        disabled={currentPage === 1}
+                        <div className="mt-3 mb-3 me-3 d-flex justify-content-end align-items-center flex-wrap" style={{ color: "#5d596c" }}>
+                            <div className="">
+                                <div className=' d-flex justify-content-end align-items-center'>
+                                    <div class="dataTables_length d-flex" id="DataTables_Table_1_length pe-3">
+                                        <span className="d-flex align-items-center">Rows per page:</span>
+                                        <div class="btn-group">
+                                            <button type="button" style={{ color: "#5d596c" }} class="bg-transparent border-0  waves-effect waves-light px-3 d-flex align-items-center gap-1" name="DataTables_Table_1_length" aria-controls="DataTables_Table_1" data-bs-toggle="dropdown" aria-expanded="false">
+                                                10 <FaCaretDown />
+                                            </button>
+                                            <ul class="dropdown-menu" style={{ minWidth: "max-content" }}>
+                                                <li class="dropdown-item">15</li>
+                                                <li class="dropdown-item">20</li>
+                                                <li class="dropdown-item">25</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="">
+                                <div className="d-flex align-items-center justify-content-end">
+                                    <div
+                                        className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4"
+                                        id="DataTables_Table_0_paginate"
                                     >
-                                        <i className={`fas fa-angle-left cursor-pointer ${currentPage === 1 ? 'text-muted' : ''}`}></i>
-                                    </button>
-                                    <button
-                                        className={`p-2 border-0 bg-transparent`}
-                                        onClick={nextPage}
-                                        disabled={currentPage === totalPagesLength}
-                                    >
-                                        <i className={`fas fa-angle-right cursor-pointer  ${currentPage === totalPagesLength ? 'text-muted' : ''}`}></i>
-                                    </button>
+                                        <p className="m-0" style={{ whiteSpace: "nowrap" }}>{`${(currentPage - 1) * itemsPerPage + 1
+                                            }-${Math.min(
+                                                currentPage * itemsPerPage,
+                                                totalItems
+                                            )} of ${totalPages}`}</p>
+                                        <button
+                                            className={`p-2 border-0 bg-transparent`}
+                                            onClick={prevPage}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <i className={`fas fa-angle-left cursor-pointer ${currentPage === 1 ? 'text-muted' : ''}`}></i>
+                                        </button>
+                                        <button
+                                            className={`p-2 border-0 bg-transparent`}
+                                            onClick={nextPage}
+                                            disabled={currentPage === totalPagesLength}
+                                        >
+                                            <i className={`fas fa-angle-right cursor-pointer  ${currentPage === totalPagesLength ? 'text-muted' : ''}`}></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

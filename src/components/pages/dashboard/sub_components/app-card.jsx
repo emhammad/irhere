@@ -41,7 +41,7 @@ const Appcard = () => {
         { id: 1, class: 'badge rounded bg-label-primary me-3 p-2', icon: <i className="ti ti-chart-pie-2 ti-sm"></i>, Heading: stats ? `${stats.total_validations}` : <small>Loading...</small>, title: 'Validations' },
         { id: 2, class: 'badge rounded bg-label-info me-3 p-2', icon: <i className="ti ti-users ti-sm"></i>, Heading: stats ? `${stats.total_users}` : <small>Loading...</small>, title: 'Active Users' },
         { id: 3, class: 'badge rounded bg-label-danger me-3 p-2', icon: <i className="ti ti-percentage ti-sm"></i>, Heading: stats ? `${stats.total_vouchers}` : <small>Loading...</small>, title: 'Vouchers' },
-        { id: 4, class: 'badge rounded bg-label-success me-3 p-2', icon: <i className="ti ti-currency-dollar ti-sm"></i>, Heading: stats ? `$${stats.total_earnings}` : <small>Loading...</small>, title: 'Revenue' },
+        { id: 4, class: 'badge rounded bg-label-success me-3 p-2', icon: <i className="ti ti-currency-dollar ti-sm"></i>, Heading: stats ? `${stats.total_earnings}` : <small>Loading...</small>, title: 'Revenue' },
     ];
 
     return (

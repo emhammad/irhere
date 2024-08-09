@@ -112,7 +112,6 @@ const SliderCustomized = () => {
         toast.success("Updated Successfully.");
       }
     } catch (error) {
-      toast.error('Error updating verification radius');
       console.log(error);
     }
   }

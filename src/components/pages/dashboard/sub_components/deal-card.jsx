@@ -29,7 +29,6 @@ const Dealchart = () => {
                 });
                 setStates(response.data.verification_counts);
             } catch (error) {
-                toast.error('Failed to fetch data. Please try again later.');
             }
         };
         if (user?.access_token) {

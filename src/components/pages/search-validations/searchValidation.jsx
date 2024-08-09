@@ -70,13 +70,12 @@ const SearchValidation = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'validation_list.csv';
+        a.download = 'Search Validation.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
-
 
     return (
         <>
@@ -99,7 +98,7 @@ const SearchValidation = () => {
                             id="DataTables_Table_0_wrapper"
                             className="dataTables_wrapper dt-bootstrap5 no-footer"
                         >
-                            <div className="card-header header-flex d-flex justify-content-between p-3">
+                            <div className="card-header header-flex d-flex justify-content-between p-3 flex-wrap">
                                 <div className="head-label d-flex align-items-center">
                                     <h5 className="card-title mb-0">Validation List</h5>
                                 </div>
@@ -114,7 +113,7 @@ const SearchValidation = () => {
                                             onClick={handleExportCSV}
                                         >
                                             <span>
-                                                <i className="ti ti-upload me-1 ti-xs"></i>
+                                                <i className="ti ti-upload me-1"></i>
                                                 <span className="d-none d-sm-inline-block">Export</span>
                                             </span>
                                         </button>

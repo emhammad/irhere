@@ -1,16 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { FaCaretDown } from "react-icons/fa";
 
 const Table = () => {
     const user = useSelector((state) => state.user?.user || {});
+    const [loading, setLoading] = useState(true);
     const [voucher, setVoucher] = useState([]);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const [currentPage, setCurrentPage] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [stats, setStats] = useState(0);
+    const dateInputRef = useRef(null);
     const navigate = useNavigate()
 
     const itemsPerPage = 10;
@@ -49,6 +52,9 @@ const Table = () => {
                 });
 
                 setVoucher(response.data.Data || []);
+                if (response.status === 200) {
+                    setLoading(false);
+                }
 
                 const statistics = await axios.get(`${url}/api/dashboard_stats`, {
                     headers: {
@@ -109,20 +115,24 @@ const Table = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'table_data.csv';
+        a.download = 'Voucher List.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
-
+    const handleButtonClick = () => {
+        if (dateInputRef.current) {
+            dateInputRef.current.showPicker();
+        }
+    }
 
     return (
         <div className="card">
             <div className="card-datatable pt-0">
                 <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
-                    <div className="card-header header-flex d-flex justify-content-between p-3">
+                    <div className="card-header header-flex d-flex justify-content-between p-3 flex-wrap">
                         <div className="head-label d-flex align-items-center">
                             <h5 className="card-title mb-0">Vouchers List</h5>
                         </div>
@@ -131,16 +141,36 @@ const Table = () => {
                                 <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light"
                                     onClick={handleExportCSV} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
                                     <span>
-                                        <i className="ti ti-upload me-1 ti-xs"></i>
+                                        <i className="ti ti-upload me-1"></i>
                                         <span className="d-none d-sm-inline-block">Export</span>
                                     </span>
                                 </button>
-                                <button className="dt-button create-new btn btn-primary waves-effect waves-light" aria-controls="DataTables_Table_0" type="button">
-                                    <span>
+                                <div style={{ position: 'relative', display: 'inline-block' }}>
+                                    <button
+                                        onClick={handleButtonClick}
+                                        className="dt-button create-new btn btn-primary waves-effect waves-light"
+                                        aria-controls="DataTables_Table_0"
+                                        type="button"
+                                    >
                                         <i className="menu-icon tf-icons ti ti-calendar"></i>
                                         <span className="d-none d-sm-inline-block">Search By Dates</span>
-                                    </span>
-                                </button>
+                                    </button>
+
+                                    <input
+                                        type="date"
+                                        id='datePicker'
+                                        ref={dateInputRef}
+                                        onClick={handleButtonClick}
+                                        style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            zIndex: 1112,
+                                            opacity: 0,
+                                        }}
+                                        onChange={(e) => console.log(e.target.value)}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -183,26 +213,48 @@ const Table = () => {
                                             </select>
                                         </td>
                                     </tr>
-                                    {voucher.map(item => (
-                                        <tr key={item.voucher_code}>
-                                            <td><small>{item.voucher_code}</small></td>
-                                            <td><small>{item.date}</small></td>
-                                            <td><small>{item.valid_date}</small></td>
-                                            <td><small>{item.amount}</small></td>
-                                            <td>
-                                                {item.expired ? (
-                                                    <span className="badge bg-label-danger">Expired</span>
-                                                ) : item.is_used ? (
-                                                    <span className="badge bg-label-success">Used</span>
-                                                ) : null}
-                                            </td>
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan="6">Loading ...</td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        voucher.map(item => (
+                                            <tr key={item.voucher_code}>
+                                                <td><small>{item.voucher_code}</small></td>
+                                                <td><small>{item.date}</small></td>
+                                                <td><small>{item.valid_date}</small></td>
+                                                <td><small>{item.amount}</small></td>
+                                                <td>
+                                                    {item.expired ? (
+                                                        <span className="badge bg-label-danger">Expired</span>
+                                                    ) : item.is_used ? (
+                                                        <span className="badge bg-label-success">Used</span>
+                                                    ) : null}
+                                                </td>
+                                            </tr>
+                                        )))}
                                 </tbody>
                             </table>
                         </div>
-                        <div className="row mt-3 mb-3 me-3">
-                            <div className="d-flex align-items-center justify-content-end">
+                        <div className="mt-3 mb-3 me-3 d-flex justify-content-end align-items-center flex-wrap" style={{ color: "#5d596c" }}>
+                            <div className="">
+                                <div className=' d-flex justify-content-end align-items-center'>
+                                    <div class="dataTables_length d-flex" id="DataTables_Table_1_length pe-3">
+                                        <span className="d-flex align-items-center">Rows per page:</span>
+                                        <div class="btn-group">
+                                            <button type="button" style={{ color: "#5d596c" }} class="bg-transparent border-0  waves-effect waves-light px-3 d-flex align-items-center gap-1" name="DataTables_Table_1_length" aria-controls="DataTables_Table_1" data-bs-toggle="dropdown" aria-expanded="false">
+                                                10 <FaCaretDown />
+                                            </button>
+                                            <ul class="dropdown-menu" style={{ minWidth: "max-content" }}>
+                                                <li class="dropdown-item">15</li>
+                                                <li class="dropdown-item">20</li>
+                                                <li class="dropdown-item">25</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="">
                                 <div
                                     className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4"
                                     id="DataTables_Table_0_paginate"

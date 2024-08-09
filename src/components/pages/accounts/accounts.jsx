@@ -68,22 +68,18 @@ const AccountSettings = () => {
                 navigate('/');
             } else {
                 try {
-                    const response = await axios.get(`${url}/api/fetch_admin_list`, {
+                    const response = await axios.get(`${url}/api/fetch_admin/${user.id}`, {
                         headers: {
                             Authorization: `Bearer ${token}`,
                             "Content-Type": "application/json",
                         },
                     });
 
-                    // const adminIds = response.data.map(admin => admin.id);  
-                    const userObject = response.data.find(admin => admin.id === user.id);
+                    setUserData(response.data);
+                    setInitialData(response.data);
 
-                    if (userObject) {
-                        setUserData(userObject);
-                        setInitialData(userObject); // Set initial data
-                    }
                 } catch (error) {
-                    console.log('Error fetching admin list:', error);
+                    console.log('Error fetching admin list:', error);                    
                 }
             }
         };
@@ -142,7 +138,6 @@ const AccountSettings = () => {
             }
         } catch (error) {
             console.log('Error updating data:', error);
-            toast.error("An error occurred while updating data");
         }
     };
 
@@ -274,7 +269,6 @@ const SecuritySettings = ({ togglePasswordVisibility, passwordVisible }) => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('Error updating password');
         }
     };
 

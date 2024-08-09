@@ -32,25 +32,25 @@ const SidebarNavbar = () => {
       }
 
       try {
-        const response = await axios.get(`${url}/api/fetch_admin_list`, {
+        const response = await axios.get(`${url}/api/fetch_admin/${user.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
 
-        const userObject = response.data.find(admin => admin.id === user.id);
+        setUserName(response.data.name);
 
-        if (userObject) {
-          setUserName(userObject.name);
-        }
       } catch (error) {
-        console.log('Error fetching admin list:', error);
+        console.log(error.response.statusText);
+        if (error.response.statusText === 'UNAUTHORIZED') {
+          dispatch(signOut());
+        }
       }
     };
 
     fetchUserData();
-  }, [user, url, navigate, location.pathname]);
+  }, [user, url, navigate, location.pathname, dispatch]);
 
   const handleSignOutUser = () => {
     navigate("/");

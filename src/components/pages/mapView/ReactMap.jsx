@@ -9,15 +9,18 @@ function MyComponent() {
     const [locationData, setLocationData] = useState([]);
     const user = useSelector((state) => state.user.user);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState();
     const navigate = useNavigate();
     const mapRef = useRef(null);
     const onLoadCalled = useRef(false);
 
     useEffect(() => {
         fetchData();
+        setCurrentPage(1)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage]);
+
+
 
     const fetchData = async () => {
         if (!user?.access_token) {
@@ -52,16 +55,21 @@ function MyComponent() {
             onLoadCalled.current = true;
             mapRef.current = map;
 
-            // Center and fit bounds on the map
             const bounds = new window.google.maps.LatLngBounds();
             locationData.forEach((item) => {
-                if (item.lat !== "" && item.lat !== "0.0" && item.long !== "" && item.long !== "0.0") {
-                    bounds.extend({ lat: Number(item.lat), lng: Number(item.long) });
+                const latitude = Number(item.lat);
+                const longitude = Number(item.long);
+
+                if (latitude && longitude && latitude !== 0 && longitude !== 0) {
+                    bounds.extend({ lat: latitude, lng: longitude });
                 }
             });
             map.fitBounds(bounds);
+
+            map.setZoom(map.getZoom() - 1);
         }
     }, [locationData]);
+
 
     const containerStyle = {
         width: '100%',
@@ -77,22 +85,34 @@ function MyComponent() {
         <GoogleMap
             mapContainerStyle={containerStyle}
             center={center}
-            zoom={2} // Adjust zoom level if needed
+            zoom={2}
             onLoad={onLoad}
-            options={{ minZoom: 2 }} // Disable zooming out beyond level 2
+            options={{ minZoom: 2 }}
         >
             {loading ? (
                 <></>
             ) : (
-                locationData.map((item, index) => (
-                    <Marker
-                        key={index}
-                        position={{ lat: Number(item.lat), lng: Number(item.long) }}
-                    />
-                ))
+                locationData.map((item, index) => {
+                    const latitude = Number(item.lat);
+                    const longitude = Number(item.long);
+
+                    if (latitude && longitude && latitude !== 0 && longitude !== 0) {
+                        return (
+                            <Marker
+                                key={index}
+                                position={{ lat: latitude, lng: longitude }}
+                            />
+                        );
+                    }
+
+                    // Debugging: Log skipped markers
+                    console.log(`Skipped Marker ${item.id}: Invalid coordinates`);
+                    return null;
+                })
             )}
         </GoogleMap>
     ) : <p>Loading...</p>;
+
 }
 
 export default React.memo(MyComponent);
