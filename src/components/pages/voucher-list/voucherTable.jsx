@@ -167,7 +167,7 @@ const Table = () => {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colSpan="2">
+                                        <td colSpan="3">
                                             <div className="input-group input-group-merge">
                                                 <span className="input-group-text p-2" id={`basic-addon-search}`}><i className="ti ti-search"></i></span>
                                                 <input
@@ -180,7 +180,7 @@ const Table = () => {
                                                 />
                                             </div>
                                         </td>
-                                        <td colSpan="3">
+                                        <td colSpan="2">
                                             <select
                                                 className="form-select rounded"
                                                 name="status"

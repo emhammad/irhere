@@ -27,7 +27,7 @@ function SearchByDate(props) {
                     </div>
                 </div>
             </Modal.Body>
-            <Modal.Footer className='d-flex justify-content-center'>
+            <Modal.Footer className='d-flex justify-content-end'>
                 <Button>Search</Button>
             </Modal.Footer>
         </Modal>
