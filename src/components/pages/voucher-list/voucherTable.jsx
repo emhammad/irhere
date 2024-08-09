@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FaCaretDown } from "react-icons/fa";
+import SearchByDate from './modal/search-by-date';
 
 const Table = () => {
     const user = useSelector((state) => state.user?.user || {});
@@ -13,7 +14,7 @@ const Table = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [stats, setStats] = useState(0);
-    const dateInputRef = useRef(null);
+    const [modalShow, setModalShow] = React.useState(false);
     const navigate = useNavigate()
 
     const itemsPerPage = 10;
@@ -122,12 +123,6 @@ const Table = () => {
         URL.revokeObjectURL(url);
     };
 
-    const handleButtonClick = () => {
-        if (dateInputRef.current) {
-            dateInputRef.current.showPicker();
-        }
-    }
-
     return (
         <div className="card">
             <div className="card-datatable pt-0">
@@ -145,32 +140,16 @@ const Table = () => {
                                         <span className="d-none d-sm-inline-block">Export</span>
                                     </span>
                                 </button>
-                                <div style={{ position: 'relative', display: 'inline-block' }}>
-                                    <button
-                                        onClick={handleButtonClick}
-                                        className="dt-button create-new btn btn-primary waves-effect waves-light"
-                                        aria-controls="DataTables_Table_0"
-                                        type="button"
-                                    >
-                                        <i className="menu-icon tf-icons ti ti-calendar"></i>
-                                        <span className="d-none d-sm-inline-block">Search By Dates</span>
-                                    </button>
-
-                                    <input
-                                        type="date"
-                                        id='datePicker'
-                                        ref={dateInputRef}
-                                        onClick={handleButtonClick}
-                                        style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            zIndex: 1112,
-                                            opacity: 0,
-                                        }}
-                                        onChange={(e) => console.log(e.target.value)}
-                                    />
-                                </div>
+                                <button
+                                    onClick={() => setModalShow(true)}
+                                    className="dt-button create-new btn btn-primary waves-effect waves-light"
+                                    aria-controls="DataTables_Table_0"
+                                    type="button"
+                                >
+                                    <i className="menu-icon tf-icons ti ti-calendar"></i>
+                                    <span className="d-none d-sm-inline-block">Search By Dates</span>
+                                </button>
+                                <SearchByDate show={modalShow} onHide={() => setModalShow(false)} />
                             </div>
                         </div>
                     </div>
