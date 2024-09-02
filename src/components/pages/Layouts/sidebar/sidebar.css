@@ -1,0 +1,55 @@
+.link-title {
+    display: none;
+}
+
+.hm-list-color {
+    color: black;
+}
+
+.collapsed .menu-link {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.collapsed .menu-link a {
+    color: black !important;
+}
+
+.collapsed:hover {
+    width: 250px !important;
+    position: absolute;
+    z-index: 11111;
+    height: 100vh
+}
+
+
+.collapsed:hover .menu-item.active>.hm-active-link {
+    border-radius: 0.375rem;
+    background: linear-gradient(90deg, #5C81E4 0%, #84A3F6 100%) !important;
+    box-shadow: 0px 2px 6px 0px rgba(115, 103, 240, 0.48) !important;
+    color: #fff !important;
+}
+
+.collapsed:hover .link-title {
+    display: block;
+}
+
+.collapsed:hover .menu-item.active .hm-list-color {
+    display: block;
+    color: #fff;
+}
+
+
+@media (max-width : 425px) {
+    .menu-link {
+        margin: 0 !important;
+    }
+
+    .app-brand {
+        margin: 0 !important;
+    }
+
+    .collapsed {
+        width: 60px !important;
+    }
+}

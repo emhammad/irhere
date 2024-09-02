@@ -1,0 +1,13 @@
+.misc-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    color: #5d596c;
+}
+
+.misc-wrapper h2 {
+    color: #5d596c;
+}
