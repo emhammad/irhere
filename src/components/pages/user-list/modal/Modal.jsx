@@ -13,7 +13,7 @@ function MyVerticallyCenteredModal({ item, ...props }) {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        phone_no: ''
+        phone_no: '',
     });
 
     useEffect(() => {
@@ -23,6 +23,8 @@ function MyVerticallyCenteredModal({ item, ...props }) {
                 email: item.email || '',
                 phone_no: item.phone_no || ''
             })
+            console.log("item: ", item);
+
         }
     }, [item])
 
@@ -49,10 +51,9 @@ function MyVerticallyCenteredModal({ item, ...props }) {
                 },
             });
 
-            props.onHide();
             window.location.reload(); // Refresh the page
+            props.onHide();
             toast.success(response.data.desc)
-            console.log('Response:', response.data);
         } catch (error) {
             props.onHide();
             console.error('Error updating user info:', error);
@@ -100,7 +101,7 @@ function MyVerticallyCenteredModal({ item, ...props }) {
                         <input
                             type="text"
                             className="form-control"
-                            name='phone'
+                            name='phone_no'
                             placeholder='Phone'
                             onChange={handleChange}
                             value={formData.phone_no}

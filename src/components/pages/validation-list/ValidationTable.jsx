@@ -40,7 +40,8 @@ const Table = () => {
                 return {
                     ...prevData,
                     start_date: value,
-                    end_date: value
+                    end_date: value,
+                    [name]: value
                 };
             } else {
                 return {
