@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import MyVerticallyCenteredModal from './modal/Modal';
+import DeleteModal from './modal/deleteModal';
 import SearchByDate from './search-by-date';
 
 const Table = () => {
@@ -18,6 +19,7 @@ const Table = () => {
   const navigate = useNavigate();
   const [modalShow, setModalShow] = React.useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchTerms, setSearchTerms] = useState({
     id: "",
@@ -143,6 +145,11 @@ const Table = () => {
     setSelectedItem(item); // Store the selected item data
   };
 
+  const handleShowDeleteModal = (show, item) => {
+    setShowDeleteModal(show);
+    setSelectedItem(item); // Store the selected item data
+  };
+
   return (
     <div>
       <div className="card">
@@ -252,7 +259,9 @@ const Table = () => {
                                   <i className="ti ti-pencil hm-icon-size"></i>
                                   Edit
                                 </button>
-                                <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2">
+                                <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2"
+                                  onClick={() => handleShowDeleteModal(true, item)}
+                                >
                                   <i className="ti ti-trash hm-icon-size"></i>
                                   Delete
                                 </button>
@@ -265,6 +274,7 @@ const Table = () => {
                   )}
 
                   <MyVerticallyCenteredModal show={showEditModal} onHide={() => setShowEditModal(false)} item={selectedItem} />
+                  <DeleteModal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} item={selectedItem} />
                 </tbody>
               </table>
             </div>
@@ -291,7 +301,7 @@ const Table = () => {
                   className="dataTables_paginate paging_simple_numbers d-flex align-items-center"
                   id="DataTables_Table_0_paginate"
                 >
-                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${stats}`}</p>
+                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, stats)} of ${stats}`}</p>
                   <span
                     className={`p-2 ${currentPage === 1 ? 'disabled' : ''}`}
                     onClick={prevPage}

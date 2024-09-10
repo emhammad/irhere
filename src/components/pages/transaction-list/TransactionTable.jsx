@@ -11,7 +11,6 @@ const Table = () => {
   const user = useSelector((state) => state.user?.user || []);
   const url = process.env.REACT_APP_SERVER_DOMAIN;
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [totalPagesLength, setTotalPagesLength] = useState(0);
   const [modalShow, setModalShow] = React.useState(false);
   const itemsPerPage = 10;
@@ -65,11 +64,9 @@ const Table = () => {
         }
         if (Array.isArray(response.data?.Data)) {
           setTransaction(response.data.Data);
-          setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
           setTotalPagesLength(response.data.Page?.TotalPages || 1);
         } else {
           setTransaction([]);
-          setTotalItems(0);
           setTotalPagesLength(1);
         }
       } catch (error) {
@@ -188,7 +185,7 @@ const Table = () => {
                     <th>Amount</th>
                     <th style={{ width: "17%" }}>Location</th>
                     <th>Balance</th>
-                    <th>Action</th>
+                    {/* <th>Action</th> */}
                   </tr>
                 </thead>
                 <tbody className="table-border-bottom-0 table-striped text-center">
@@ -293,7 +290,7 @@ const Table = () => {
                           <small className="text-success"></small></td>
                         <td><small>{item.descrip}</small></td>
                         <td><small>{item.balance}</small></td>
-                        <td>
+                        {/* <td>
                           <div className="dropdown">
                             <button className="btn p-0" type="button" id="earningReportsId" data-bs-toggle="dropdown">
                               <i className="ti ti-dots-vertical ti-sm text-muted"></i>
@@ -305,7 +302,7 @@ const Table = () => {
                               </button>
                             </div>
                           </div>
-                        </td>
+                        </td> */}
                       </tr>
                     )))}
                 </tbody>
@@ -314,7 +311,7 @@ const Table = () => {
             <div className="mt-3 mb-3 me-3 d-flex justify-content-end align-items-center flex-wrap" style={{ color: "#5d596c" }}>
               <div className="">
                 <div className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4" id="DataTables_Table_0_paginate">
-                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalItems)} of ${totalPagesLength}`}</p>
+                  <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, totalPagesLength)} of ${totalPagesLength}`}</p>
                   <button
                     className={`p-2 border-0 bg-transparent`}
                     onClick={prevPage}

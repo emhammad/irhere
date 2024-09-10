@@ -11,7 +11,6 @@ const Table = () => {
     const [voucher, setVoucher] = useState([]);
     const url = process.env.REACT_APP_SERVER_DOMAIN;
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [stats, setStats] = useState(0);
     const [modalShow, setModalShow] = React.useState(false);
@@ -46,8 +45,8 @@ const Table = () => {
                 const params = {};
 
                 if (searchTerms.code) params.code = searchTerms.code;
-                if (searchTerms.expired) params.expired = 0;
-                if (searchTerms.is_used) params.is_used = 0;
+                if (searchTerms.expired) params.expired = 1;
+                if (searchTerms.is_used) params.is_used = 1;
 
                 // Include start_date and end_date in the request if they exist
                 if (searchTerms.start_date) params.start_date = searchTerms.start_date;
@@ -58,19 +57,9 @@ const Table = () => {
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "application/json",
                     },
-                    params: Object.keys(params).length ? params : undefined,
+                    params: params
                 });
-
-                let voucherData = response.data.Data || [];
-
-                // Apply filtering based on status
-                if (searchTerms.expired) {
-                    voucherData = voucherData.filter(item => new Date(item.date) < new Date());
-                } else if (searchTerms.is_used) {
-                    voucherData = voucherData.filter(item => item.is_used);
-                }
-
-                setVoucher(voucherData);
+                setVoucher(response.data.Data);
 
                 if (response.status === 200) {
                     setLoading(false);
@@ -85,10 +74,8 @@ const Table = () => {
                 setStats(statistics.data.total_vouchers);
 
                 if (response.status === 200) {
-                    setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
                     setTotalPagesLength(response.data.Page?.TotalPages || 1);
                 } else {
-                    setTotalItems(0);
                     setTotalPagesLength(1);
                 }
             } catch (error) {
@@ -116,7 +103,7 @@ const Table = () => {
             ...prevData,
             [name]: value,
             ...(name === "status" && value === "expired" ? { expired: 1, is_used: '' } : {}),
-            ...(name === "status" && value === "is_used" ? { is_used: 0, expired: '' } : {}),
+            ...(name === "status" && value === "is_used" ? { is_used: 1, expired: '' } : {}),
             ...(name === "status" && value === "Select by expired & used" ? { expired: '', is_used: '' } : {})
         }));
     };
@@ -211,7 +198,6 @@ const Table = () => {
                                                 <option value="">Select by expired & used</option>
                                                 <option value="expired">Expired</option>
                                                 <option value="is_used">Used</option>
-                                                <option value="not_used">Not Used</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -250,7 +236,7 @@ const Table = () => {
                                     className="dataTables_paginate paging_simple_numbers d-flex align-items-center gap-4"
                                     id="DataTables_Table_0_paginate"
                                 >
-                                    <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalItems)} of ${stats}`}</p>
+                                    <p className="m-0">{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min((currentPage * itemsPerPage), stats)} of ${stats}`}</p>
                                     <button
                                         className={`p-2 border-0 bg-transparent`}
                                         onClick={prevPage}

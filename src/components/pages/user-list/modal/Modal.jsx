@@ -1,9 +1,15 @@
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import toast from 'react-hot-toast';
+import { useSelector } from 'react-redux';
 
 
 function MyVerticallyCenteredModal({ item, ...props }) {
+    const user = useSelector((state) => state.user?.user || {});
+    const url = process.env.REACT_APP_SERVER_DOMAIN;
+    const token = user?.access_token;
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -28,10 +34,32 @@ function MyVerticallyCenteredModal({ item, ...props }) {
         }))
     }
 
-    const handleSubmit = () => {
-        console.log(formData);
-        props.onHide();
-    }
+    const handleSubmit = async () => {
+        try {
+
+            const payload = {
+                user_id: Number(item.user_id),
+                ...formData
+            };
+
+            const response = await axios.post(`${url}/api/update_user_info_app`, payload, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            props.onHide();
+            window.location.reload(); // Refresh the page
+            toast.success(response.data.desc)
+            console.log('Response:', response.data);
+        } catch (error) {
+            props.onHide();
+            console.error('Error updating user info:', error);
+            toast.error('Error updating user info')
+        }
+
+    };
 
     return (
         <Modal

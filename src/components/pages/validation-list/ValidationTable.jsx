@@ -12,7 +12,6 @@ const Table = () => {
     const [tableData, setTableData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [modalShow, setModalShow] = React.useState(false);
@@ -105,18 +104,23 @@ const Table = () => {
                     },
                 });
 
-                setTotalPages(response.data?.Page.TotalPages);
+                const TotalValidations = await axios.get(`${url}/api/dashboard_stats`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'multipart/form-data',
+                    }
+                });
+
+                setTotalPages(TotalValidations.data.total_validations);
 
                 if (response.status === 200) {
                     const dataArray = Object.values(response.data.Data);
                     setTableData(dataArray);
                     setFilteredData(dataArray.slice(0, itemsPerPage)); // Slice the data according to itemsPerPage
                     setLoading(false);
-                    setTotalItems(response.data.Page?.TotalItems || response.data.Data.length);
                     setTotalPagesLength(response.data.Page?.TotalPages || 1);
 
                 } else {
-                    setTotalItems(0);
                     setTotalPagesLength(1);
                 }
 
@@ -310,7 +314,7 @@ const Table = () => {
                                 <p className="m-0" style={{ whiteSpace: "nowrap" }}>{`${(currentPage - 1) * itemsPerPage + 1
                                     }-${Math.min(
                                         currentPage * itemsPerPage,
-                                        totalItems
+                                        totalPages
                                     )} of ${totalPages}`}</p>
                                 <button
                                     className={`p - 2 border-0 bg-transparent`}
