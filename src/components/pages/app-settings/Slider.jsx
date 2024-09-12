@@ -127,7 +127,7 @@ const SliderCustomized = () => {
           onChange={(event, newValue) => setSliderValue(newValue)}
         />
       </div>
-      <div className="col-12 d-flex justify-content-end pt-4 pe-2">
+      <div className="col-12 d-flex justify-content-end pt-2 pe-2">
         <button className="btn btn-primary" onClick={update}>Update</button>
       </div>
     </div>

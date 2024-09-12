@@ -105,6 +105,28 @@ const AppSetting = () => {
     }
   };
 
+  const [number, setNumber] = useState("");
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+
+    // Only allow values between 1 and 8 to be typed
+    if (value === "" || (value >= 1 && value <= 8)) {
+      setNumber(value);
+    }
+  };
+
+  const handleBlur = (e) => {
+    const value = parseInt(e.target.value, 10);
+
+    // Enforce the boundary if the user tries to leave the field with an invalid number
+    if (value < 1) {
+      setNumber(1);
+    } else if (value > 8) {
+      setNumber(8);
+    }
+  };
+
   return (
     <>
       <div className="container-xxl flex-grow-1">
@@ -171,6 +193,39 @@ const AppSetting = () => {
               </Box>
             </div>
             <div className="col-12 d-flex justify-content-end py-4">
+              <button className="btn btn-primary" onClick={updateTerms}>
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="row my-4 mt-5">
+          <div className="col-12 mb-3">
+            <h4 className="text-primary m-0">Validation Settings</h4>
+          </div>
+          <div className="card py-4 px-4">
+            <div className="row">
+              <div className="col-lg-6 col-md-12">
+                <p>The number of gestures to be performed on the App.</p>
+                <input
+                  type='number'
+                  className="form-control"
+                  placeholder="Please add a number between 1 and 8."
+                  value={number}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                />
+              </div>
+              <div className="col-lg-6 col-md-12">
+                <p>Allowed time in seconds to perform gestures.</p>
+                <input
+                  type='number'
+                  className="form-control"
+                  placeholder={'Please add number of seconds.'}
+                />
+              </div>
+            </div>
+            <div className="col-12 d-flex justify-content-end pt-4">
               <button className="btn btn-primary" onClick={updateTerms}>
                 Update
               </button>
