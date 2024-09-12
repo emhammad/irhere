@@ -226,7 +226,7 @@ const AppSetting = () => {
               </div>
             </div>
             <div className="col-12 d-flex justify-content-end pt-4">
-              <button className="btn btn-primary" onClick={updateTerms}>
+              <button className="btn btn-primary">
                 Update
               </button>
             </div>
