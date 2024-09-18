@@ -15,6 +15,7 @@ const AppSetting = () => {
   const [avdt, setAvdt] = useState("");
   const url = process.env.REACT_APP_SERVER_DOMAIN;
   const getTemsApi = `${url}/api/get_terms`;
+  const token = user?.access_token;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +49,6 @@ const AppSetting = () => {
 
   const updateTerms = async () => {
     try {
-      const token = user?.access_token;
       if (!token) {
         navigate('/login');
       }
@@ -105,25 +105,67 @@ const AppSetting = () => {
     }
   };
 
-  const [number, setNumber] = useState("");
+  const [number, setNumber] = useState({
+    gestureCount: '',
+    detectionDuration: ''
+  });
 
   const handleChange = (e) => {
-    const value = e.target.value;
+    const { name, value } = e.target;
 
-    // Only allow values between 1 and 8 to be typed
-    if (value === "" || (value >= 1 && value <= 8)) {
-      setNumber(value);
+    if (name === "gestureCount") {
+      // Only allow values between 1 and 8 to be typed for gestureCount
+      if (value === "" || (value >= 1 && value <= 8)) {
+        setNumber((prevState) => ({
+          ...prevState,
+          [name]: value,
+        }));
+      }
+    } else {
+      // Allow any value for detectionDuration
+      setNumber((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
     }
   };
 
   const handleBlur = (e) => {
-    const value = parseInt(e.target.value, 10);
+    const { name, value } = e.target;
+    const parsedValue = parseInt(value, 10);
 
-    // Enforce the boundary if the user tries to leave the field with an invalid number
-    if (value < 1) {
-      setNumber(1);
-    } else if (value > 8) {
-      setNumber(8);
+    if (name === "gestureCount") {
+      // Enforce the boundary for gestureCount if the user tries to leave the field with an invalid number
+      if (parsedValue < 1) {
+        setNumber((prevState) => ({
+          ...prevState,
+          [name]: 1,
+        }));
+      } else if (parsedValue > 8) {
+        setNumber((prevState) => ({
+          ...prevState,
+          [name]: 8,
+        }));
+      }
+    }
+  };
+
+  const updateGesture = async () => {
+    try {
+      const response = await axios.post(`${url}/api/update_gesture_video`, number, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      toast.success(response.data.desc);
+      setNumber({
+        gestureCount: '',
+        detectionDuration: ''
+      })
+    } catch (error) {
+      toast.error(error.response.data.desc);
+      console.error("Error updating gesture:", error);
     }
   };
 
@@ -208,10 +250,11 @@ const AppSetting = () => {
               <div className="col-lg-6 col-md-12">
                 <p>The number of gestures to be performed on the App.</p>
                 <input
-                  type='number'
+                  type="number"
+                  name="gestureCount"
                   className="form-control"
                   placeholder="Please add a number between 1 and 8."
-                  value={number}
+                  value={number.gestureCount}
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
@@ -219,14 +262,17 @@ const AppSetting = () => {
               <div className="col-lg-6 col-md-12">
                 <p>Allowed time in seconds to perform gestures.</p>
                 <input
-                  type='number'
+                  type="number"
+                  name="detectionDuration"
                   className="form-control"
-                  placeholder={'Please add number of seconds.'}
+                  placeholder="Please add number of seconds."
+                  value={number.detectionDuration}
+                  onChange={handleChange}
                 />
               </div>
             </div>
             <div className="col-12 d-flex justify-content-end pt-4">
-              <button className="btn btn-primary">
+              <button className="btn btn-primary" onClick={updateGesture}>
                 Update
               </button>
             </div>
