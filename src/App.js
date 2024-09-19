@@ -16,7 +16,7 @@ import AppSetting from "./components/pages/app-settings/AppSetting";
 import SearchValidation from "./components/pages/search-validations/SearchValidation";
 import Registration from "./components/pages/registration/Registration";
 
-const knownPaths = ["/registration", "/portal", "/validation-list", "/transaction-list", "/user-list", "/voucher-list", "/map-view", "/account", "/app-setting"];
+const knownPaths = ["/portal/registration", "/portal/dashboard", "/portal/validation-list", "/portal/transaction-list", "/portal/user-list", "/portal/voucher-list", "/portal/map-view", "/portal/account", "/portal/app-setting"];
 
 const App = () => {
   return (
@@ -44,19 +44,19 @@ const AppContent = () => {
             {isKnownPath && <Navbar />}
             <div className="content-wrapper">
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/registration" element={<Registration />} />
-                <Route path="/portal" element={<Dashboard />} />
-                <Route path="/validation-list" element={<ValidationList />} />
-                <Route path="/transaction-list" element={<TransactionList />} />
-                <Route path="/user-list" element={<UserList />} />
-                <Route path="/voucher-list" element={<VoucherList />} />
-                <Route path="/map-view" element={<MapView />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/app-setting" element={<AppSetting />} />
-                <Route path="/search-validation" element={<SearchValidation />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/portal" element={<Home />} />
+                <Route path="/portal/login" element={<Login />} />
+                <Route path="/portal/registration" element={<Registration />} />
+                <Route path="/portal/dashboard" element={<Dashboard />} />
+                <Route path="/portal/validation-list" element={<ValidationList />} />
+                <Route path="/portal/transaction-list" element={<TransactionList />} />
+                <Route path="/portal/user-list" element={<UserList />} />
+                <Route path="/portal/voucher-list" element={<VoucherList />} />
+                <Route path="/portal/map-view" element={<MapView />} />
+                <Route path="/portal/account" element={<Account />} />
+                <Route path="/portal/app-setting" element={<AppSetting />} />
+                <Route path="/portal/search-validation" element={<SearchValidation />} />
+                <Route path="/portal*" element={<NotFound />} />
               </Routes>
             </div>
             <div className="content-backdrop fade"></div>

@@ -26,8 +26,8 @@ const Login = () => {
 
   useEffect(() => {
     const token = user?.access_token;
-    if (token && location.pathname === "/login") {
-      navigate("/portal");
+    if (token && location.pathname === "/portal/login") {
+      navigate("/portal/dashboard");
       return;
     }
   }, [location.pathname, navigate, user])
@@ -61,7 +61,7 @@ const Login = () => {
         // Successful login
         dispatch(setUser(response.data));
         toast.success("Login Success");
-        navigate('/portal');
+        navigate('/portal/dashboard');
       }
     } catch (error) {
       toast.error(error.response.data.desc);

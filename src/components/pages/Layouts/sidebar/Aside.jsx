@@ -32,14 +32,14 @@ function Aside() {
   };
 
   const menuItems = [
-    { path: "/portal", icon: "ti ti-smart-home", title: "Dashboard" },
-    { path: "/validation-list", icon: "ti ti-layout-kanban", title: "Validations List" },
-    { path: "/transaction-list", icon: "ti ti-text-wrap-disabled", title: "Transactions List" },
-    { path: "/user-list", icon: "ti ti-users", title: "Users List" },
-    { path: "/voucher-list", icon: "ti ti-percentage", title: "Vouchers" },
-    { path: "/app-setting", icon: "ti ti-settings", title: "App Settings" },
-    { path: "/search-validation", icon: "ti ti-search", title: "Search Validation" },
-    { path: "/map-view", icon: "ti ti-map", title: "Validations Map View" }
+    { path: "/portal/dashboard", icon: "ti ti-smart-home", title: "Dashboard" },
+    { path: "/portal/validation-list", icon: "ti ti-layout-kanban", title: "Validations List" },
+    { path: "/portal/transaction-list", icon: "ti ti-text-wrap-disabled", title: "Transactions List" },
+    { path: "/portal/user-list", icon: "ti ti-users", title: "Users List" },
+    { path: "/portal/voucher-list", icon: "ti ti-percentage", title: "Vouchers" },
+    { path: "/portal/app-setting", icon: "ti ti-settings", title: "App Settings" },
+    { path: "/portal/search-validation", icon: "ti ti-search", title: "Search Validation" },
+    { path: "/portal/map-view", icon: "ti ti-map", title: "Validations Map View" }
   ];
 
   return (
@@ -47,7 +47,7 @@ function Aside() {
       <aside id="layout-menu" className={`hm-layout-menu menu-vertical menu bg-menu-theme ${collapsed ? 'collapsed' : ''} `} style={{ width: sidebarWidth + "px" }}>
 
         <div className="app-brand demo ">
-          <Link to='/portal' className="app-brand-link justify-content-around my-3">
+          <Link to='/portal/dashboard' className="app-brand-link justify-content-around my-3">
             <img src={IRhere} alt="" className="me-3" />
             <h4 className="m-0">IRhere</h4>
           </Link>

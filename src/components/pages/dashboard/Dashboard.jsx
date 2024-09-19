@@ -14,7 +14,7 @@ function Dashboard() {
   useEffect(() => {
     const checkUserCredentials = () => {
       if (!user) {
-        navigate("/login");
+        navigate("portal/login");
         return;
       }
     };

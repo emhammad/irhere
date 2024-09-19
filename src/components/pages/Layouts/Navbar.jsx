@@ -19,15 +19,15 @@ const SidebarNavbar = () => {
   useEffect(() => {
     const token = user?.access_token;
 
-    if (token && location.pathname === "/login") {
-      navigate("/portal");
-      return; // Return early to avoid further execution
-    }
+    // if (token && location.pathname === "/portal/login") {
+    //   navigate("/portal/dashboard");
+    //   return; // Return early to avoid further execution
+    // }
 
     // Fetch user data if not redirected
     const fetchUserData = async () => {
       if (!token) {
-        navigate('/login');
+        navigate('/portal/login');
         return;
       }
 
@@ -53,7 +53,7 @@ const SidebarNavbar = () => {
   }, [user, url, navigate, location.pathname, dispatch]);
 
   const handleSignOutUser = () => {
-    navigate("/login");
+    navigate("/portal/login");
     toast.success('Logout successfully.');
     dispatch(signOut());
   };
@@ -90,7 +90,7 @@ const SidebarNavbar = () => {
                   <div className="dropdown-divider"></div>
                 </li>
                 <li>
-                  <Link className={`dropdown-item ${isActive('/account') ? 'active' : ''}`} to="/account">
+                  <Link className={`dropdown-item ${isActive('/portal/account') ? 'active' : ''}`} to="/portal/account">
                     <i className="ti ti-user-check me-2 ti-sm"></i>
                     <span className="align-middle">My Profile</span>
                   </Link>
