@@ -44,6 +44,7 @@ const AppContent = () => {
             {isKnownPath && <Navbar />}
             <div className="content-wrapper">
               <Routes>
+                {/* Remove the default / route and replace it with /portal */}
                 <Route path="/portal" element={<Home />} />
                 <Route path="/portal/login" element={<Login />} />
                 <Route path="/portal/registration" element={<Registration />} />
