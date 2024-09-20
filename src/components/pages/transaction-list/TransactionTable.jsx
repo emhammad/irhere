@@ -238,16 +238,23 @@ const Table = () => {
                     <td>
                       <div className="input-group input-group-merge">
                         <span className="input-group-text p-2"><i className="ti ti-search"></i></span>
-                        <select
-                          className="form-select"
+                        <input
+                          type="number"
+                          className="form-control"
                           name="amount"
+                          placeholder="Amount..."
                           value={searchTerms.amount}
                           onChange={handleChange}
+                        />
+                        {/* <select
+                          className="form-select"
+                          name="amount"
+                          
                         >
                           <option value="">Select Amount</option>
                           <option value="credit">Credit</option>
                           <option value="debit">Debit</option>
-                        </select>
+                        </select> */}
                       </div>
                     </td>
                     <td>

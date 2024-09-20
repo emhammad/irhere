@@ -143,7 +143,7 @@ const SearchValidation = () => {
                                         </thead>
                                         <tbody className="table-border-bottom-0 table-striped text-center">
                                             {loading ? (
-                                                <tr>
+                                                <tr className="bg-transparent">
                                                     <td>Loading...</td> {/* Adjust colSpan to cover all table columns */}
                                                 </tr>
                                             ) : error ? (
@@ -151,11 +151,11 @@ const SearchValidation = () => {
                                                     <td>{error}</td> {/* Adjust colSpan to cover all table columns */}
                                                 </tr>
                                             ) : emptyData === false ? (
-                                                <tr>
+                                                <tr className="bg-transparent">
                                                     <td>Enter Validation Number to search.</td> {/* Adjust colSpan to cover all table columns */}
                                                 </tr>
                                             ) : data.length === 0 ? (
-                                                <tr>
+                                                <tr className="bg-transparent">
                                                     <td>No records found</td> {/* Adjust colSpan to cover all table columns */}
                                                 </tr>
                                             ) : (
