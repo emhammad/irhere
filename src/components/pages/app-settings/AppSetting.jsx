@@ -223,7 +223,7 @@ const AppSetting = () => {
                   value={number.gestureCount}
                   onChange={handleChange}
                 >
-                  <option value="">Please add a number between 1 and 8</option>
+                  <option value="">Please add a number between 1 and 7</option>
                   {Array.from({ length: 7 }, (_, i) => i + 1).map((num) => (
                     <option key={num} value={num}>
                       {num}
