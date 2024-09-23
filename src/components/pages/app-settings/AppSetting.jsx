@@ -112,42 +112,10 @@ const AppSetting = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "gestureCount") {
-      // Only allow values between 1 and 8 to be typed for gestureCount
-      if (value === "" || (value >= 1 && value <= 8)) {
-        setNumber((prevState) => ({
-          ...prevState,
-          [name]: value,
-        }));
-      }
-    } else {
-      // Allow any value for detectionDuration
-      setNumber((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    }
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    const parsedValue = parseInt(value, 10);
-
-    if (name === "gestureCount") {
-      // Enforce the boundary for gestureCount if the user tries to leave the field with an invalid number
-      if (parsedValue < 1) {
-        setNumber((prevState) => ({
-          ...prevState,
-          [name]: 1,
-        }));
-      } else if (parsedValue > 8) {
-        setNumber((prevState) => ({
-          ...prevState,
-          [name]: 8,
-        }));
-      }
-    }
+    setNumber((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
   const updateGesture = async () => {
@@ -249,26 +217,35 @@ const AppSetting = () => {
             <div className="row">
               <div className="col-lg-6 col-md-12">
                 <p>The number of gestures to be performed on the App.</p>
-                <input
-                  type="number"
+                <select
                   name="gestureCount"
-                  className="form-control"
-                  placeholder="Please add a number between 1 and 8."
+                  className="form-select"
                   value={number.gestureCount}
                   onChange={handleChange}
-                  onBlur={handleBlur}
-                />
+                >
+                  <option value="">Please add a number between 1 and 8</option>
+                  {Array.from({ length: 7 }, (_, i) => i + 1).map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="col-lg-6 col-md-12">
                 <p>Allowed time in seconds to perform gestures.</p>
-                <input
-                  type="number"
+                <select
                   name="detectionDuration"
-                  className="form-control"
-                  placeholder="Please add number of seconds."
+                  className="form-select"
                   value={number.detectionDuration}
                   onChange={handleChange}
-                />
+                >
+                  <option value="">Select time in seconds</option>
+                  {[5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((sec) => (
+                    <option key={sec} value={sec}>
+                      {sec} seconds
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="col-12 d-flex justify-content-end pt-4">

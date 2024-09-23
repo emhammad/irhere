@@ -48,7 +48,7 @@ export const fetchTransaction = () => async (dispatch) => {
     dispatch(setSuccess(true))
   } catch (error) {
     
-    console.log(error, "Error in losgin");
+    console.log(error, "Error in login");
     dispatch(setLoading(false));
     dispatch(setError("internal server error"));
   }
