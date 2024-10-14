@@ -28,7 +28,7 @@ const Login = () => {
     const token = user?.access_token;
     if (token && location.pathname === "/portal/login") {
       navigate("/portal/dashboard");
-      return;
+      return; 
     }
   }, [location.pathname, navigate, user])
 

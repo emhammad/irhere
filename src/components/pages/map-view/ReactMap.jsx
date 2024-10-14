@@ -14,7 +14,7 @@ function MyComponent() {
 
     const fetchData = async () => {
         if (!user?.access_token) {
-            navigate('/login');
+            navigate('/portal/login');
             return;
         } else {
             try {

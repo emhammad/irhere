@@ -57,13 +57,13 @@ const SearchValidation = () => {
 
 
     const handleExportCSV = () => {
-        const headers = ["VID", "Name", "Email/Phone", "Date", "Status"];
+        const headers = ["Validation Number", "Name", "Address", "Date", "Status"];
         const csvContent = [
             headers.join(','),
             ...data.map(item => [
                 item.ver_id,
                 item.name,
-                item.email,
+                item.address,
                 item.date,
                 item.status ? "verified" : "unverified"
             ].join(','))
@@ -134,9 +134,9 @@ const SearchValidation = () => {
                                     <table className="table table-striped">
                                         <thead className="border-bottom table-bg text-center">
                                             <tr>
-                                                <th>VID</th>
+                                                <th>Validation Number</th>
                                                 <th>Name</th>
-                                                <th>Email/Phone</th>
+                                                <th>Address</th>
                                                 <th>Date</th>
                                                 <th>Status</th>
                                             </tr>
@@ -163,8 +163,20 @@ const SearchValidation = () => {
                                                     <tr key={item.ver_id}>
                                                         <td><small>{item.ver_id}</small></td>
                                                         <td><small>{item.name}</small></td>
-                                                        <td><small>{item.email}</small></td>
-                                                        <td><small>{item.date}</small></td>
+                                                        <td><small>{item.address}</small></td>
+                                                        <td>
+                                                            <small>
+                                                                {new Date(item.date).toLocaleDateString('en-GB', {
+                                                                    day: 'numeric',
+                                                                    month: 'short',
+                                                                    year: 'numeric'
+                                                                })}{' '}
+                                                                {new Date(item.date).toLocaleTimeString('en-GB', {
+                                                                    hour: '2-digit',
+                                                                    minute: '2-digit',
+                                                                })}
+                                                            </small>
+                                                        </td>
                                                         <td>
                                                             <span className={`badge ${item.status ? "bg-label-success" : "bg-label-danger"}`}>
                                                                 {item.status ? "verified" : "unverified"}

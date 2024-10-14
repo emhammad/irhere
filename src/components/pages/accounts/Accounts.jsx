@@ -65,7 +65,7 @@ const AccountSettings = () => {
         const fetchUserData = async () => {
             const token = user?.access_token;
             if (!token) {
-                navigate('/login');
+                navigate('/portal/login');
             } else {
                 try {
                     const response = await axios.get(`${url}/api/fetch_admin/${user.id}`, {

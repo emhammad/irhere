@@ -22,6 +22,13 @@ function SearchByDate({ onSearch, ...props }) {
         props.onHide(); // Close the modal after search
     };
 
+    const handleClear = () => {
+        setStartDate(null);
+        setEndDate(null);
+        onSearch(null, null);
+        props.onHide(); // Close the modal after search
+    };
+
     return (
         <Modal
             {...props}
@@ -65,6 +72,9 @@ function SearchByDate({ onSearch, ...props }) {
                 </div>
             </Modal.Body>
             <Modal.Footer className='d-flex justify-content-end'>
+                <Button variant="secondary" onClick={handleClear} className='me-2'>
+                    Clear
+                </Button>
                 <Button onClick={handleSearch}>Search</Button>
             </Modal.Footer>
         </Modal>

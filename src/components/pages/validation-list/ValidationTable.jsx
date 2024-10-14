@@ -1,3 +1,4 @@
+import * as XLSX from 'xlsx';
 import React from 'react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -16,6 +17,7 @@ const Table = () => {
     const [totalPages, setTotalPages] = useState(0);
     const [modalShow, setModalShow] = React.useState(false);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [searchDateActive, setSearchDateActive] = useState(false);
     const navigate = useNavigate();
 
     const [searchTerms, setSearchTerms] = useState({
@@ -54,7 +56,7 @@ const Table = () => {
 
 
     const mapFields = [
-        { id: 1, name: "ver_id", placeholder: "VID...", type: "text" },
+        { id: 1, name: "ver_id", placeholder: "Validation Number...", type: "text" },
         { id: 2, name: "Name", placeholder: "Name...", type: "text" },
         { id: 3, name: "Email", placeholder: "Email/Phone...", type: "text" },
         { id: 4, name: "Date", placeholder: "Date...", type: "date" },
@@ -87,11 +89,11 @@ const Table = () => {
             params['start_date'] = searchTerms.start_date;
         }
         if (searchTerms.end_date) {
-            params['end_date'] = searchTerms.end_date;
+            params['end_date'] = searchTerms.end_date; 
         }
 
         if (!token) {
-            navigate('/login')
+            navigate('/portal/login')
         } else {
             try {
                 const response = await axios.get(`${url}/api/get_certificate_list_all/page/${currentPage}`, {
@@ -129,12 +131,17 @@ const Table = () => {
                 console.log(error);
             }
         }
+
+
     };
 
 
     useEffect(() => {
         fetchData();
         setItemsPerPage(10)
+        if (searchTerms.start_date === null || searchTerms.end_date === null) {
+            setSearchDateActive(false)
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user, url, currentPage, searchTerms, itemsPerPage]);
 
@@ -146,36 +153,56 @@ const Table = () => {
         setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
     };
 
-    const handleExportCSV = () => {
-        const headers = ['VID', 'Name', 'Email/Phone', 'Date', 'Status'];
+    const handleExportExcel = () => {
+        const headers = ['Validation Number', 'Name', 'Email/Phone', 'Date', 'Status'];
         const rows = tableData.map(item => [
             item.ver_id,
             item.name,
             item.email,
-            item.date || '', // Include the date as it is, handle empty dates
+            item.date ? new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '', // Format date or handle empty dates
             item.status === "True" ? "Verified" : "Unverified"
         ]);
 
-        const csvContent = [
-            headers.join(','), // Add headers
-            ...rows.map(row => row.join(',')) // Add rows
-        ].join('\n');
+        // Prepare data for the worksheet
+        const worksheetData = [headers, ...rows];
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
+        // Create a workbook and append the worksheet
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Validation List');
+
+        // Get the first non-empty date from the data
+        const firstDate = tableData.find(item => item.date)?.date;
+
+        // If no date is found, fallback to today's date (optional)
+        const dateToUse = firstDate ? new Date(firstDate) : new Date();
+
+        // Format the date as "4 Feb 2024"
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+        const formattedDate = new Intl.DateTimeFormat('en-GB', options).format(dateToUse);
+
+        // Convert workbook to binary
+        const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+
+        // Create a Blob and download link for the Excel file
+        const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'Validation list.csv';
+        a.download = `Validation List - ${formattedDate}.xlsx`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     };
 
-    // const handleItemsPerPageChange = (newItemsPerPage) => {
-    //     setItemsPerPage(newItemsPerPage);
-    //     setCurrentPage(1); // Reset to the first page when items per page changes
-    // };
+    // Helper function to convert string to array buffer
+    const s2ab = (s) => {
+        const buf = new ArrayBuffer(s.length);
+        const view = new Uint8Array(buf);
+        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+        return buf;
+    };
 
     const handleSearchByDate = (start_date, end_date) => {
         setSearchTerms((prevTerms) => ({
@@ -183,8 +210,7 @@ const Table = () => {
             start_date,
             end_date,
         }));
-    };
-
+    }
 
     return (
         <div className="card">
@@ -196,22 +222,23 @@ const Table = () => {
                         </div>
                         <div className="dt-action-buttons text-end pt-3 pt-md-0">
                             <div className="dt-buttons">
-                                <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light" onClick={handleExportCSV} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
+                                <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light" onClick={handleExportExcel} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
                                     <span>
                                         <i className="ti ti-upload me-1"></i>
                                         <span className="d-none d-sm-inline-block">Export</span>
                                     </span>
                                 </button>
                                 <button
-                                    onClick={() => setModalShow(true)}
-                                    className="dt-button create-new btn btn-primary waves-effect waves-light"
+                                    onClick={() => { setSearchDateActive(true); setModalShow(true) }}
+                                    className="dt-button create-new btn btn-primary waves-effect waves-light search-dates"
                                     aria-controls="DataTables_Table_0"
                                     type="button"
                                 >
                                     <i className="menu-icon tf-icons ti ti-calendar"></i>
                                     <span className="d-none d-sm-inline-block">Search By Dates</span>
+                                    <span className={`${searchDateActive === true ? 'search-dates-active' : ''}`}></span>
                                 </button>
-                                <SearchByDate show={modalShow} onHide={() => setModalShow(false)} onSearch={handleSearchByDate} />
+                                <SearchByDate show={modalShow} onHide={() => { setModalShow(false) }} onSearch={handleSearchByDate} />
                             </div>
                         </div>
                     </div>
@@ -220,7 +247,7 @@ const Table = () => {
                             <table className="table table-striped text-center">
                                 <thead className='table-bg'>
                                     <tr>
-                                        <th>VID</th>
+                                        <th>Validation Number</th>
                                         <th>Name</th>
                                         <th>Email/Phone</th>
                                         <th>Date</th>
@@ -233,16 +260,28 @@ const Table = () => {
                                     <tr className='input-row'>
                                         {mapFields.map((field, i) => (
                                             <th key={i}>
-                                                {field.type === "text" || field.type === "date" ? (
+                                                {field.type === "text" ? (
                                                     <div className="input-group input-group-merge">
                                                         <span className="input-group-text p-2" id={`basic-addon-search-${field.name}`}><i className="ti ti-search"></i></span>
                                                         <input
-                                                            type={field.type}
+                                                            type="text"
                                                             className="form-control"
                                                             placeholder={field.placeholder}
                                                             name={field.name}
                                                             value={searchTerms[field.name]}
                                                             onChange={handleChange}
+                                                        />
+                                                    </div>
+                                                ) : field.type === "date" ? (
+                                                    <div className="input-group input-group-merge">
+                                                        <span className="input-group-text p-2" id={`basic-addon-search-${field.name}`}><i className="ti ti-search"></i></span>
+                                                        <input
+                                                            type="date"
+                                                            className="form-control"
+                                                            name={field.name}
+                                                            value={searchTerms[field.name]}
+                                                            onChange={handleChange}
+                                                        // Format the value to 'YYYY-MM-DD' when sending to the search function
                                                         />
                                                     </div>
                                                 ) : (
@@ -254,7 +293,7 @@ const Table = () => {
                                                             onChange={handleChange}
                                                         >
                                                             {field.options.map(option => (
-                                                                <option key={option.value} value={option.value} >{option.label}</option>
+                                                                <option key={option.value} value={option.value}>{option.label}</option>
                                                             ))}
                                                         </select>
                                                     </div>
@@ -276,7 +315,9 @@ const Table = () => {
                                                 <td><small>{item.ver_id}</small></td>
                                                 <td><small>{item.name}</small></td>
                                                 <td><small>{item.email}</small></td>
-                                                <td><small>{item.date.split('T')[0]}</small></td>
+                                                <td>
+                                                    <small>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
+                                                </td>
                                                 <td><small>{item.address}</small></td>
                                                 <td>
                                                     <span className={`badge ${item.status === "True" ? "bg-label-success" : "bg-label-danger"}`}>

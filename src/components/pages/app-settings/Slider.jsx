@@ -77,7 +77,7 @@ const SliderCustomized = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!token) {
-        navigate('/login');
+        navigate('/portal/login');
       }
 
       try {

@@ -21,6 +21,7 @@ const Table = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [searchDateActive, setSearchDateActive] = useState(false);
   const [searchTerms, setSearchTerms] = useState({
     id: "",
     name: "",
@@ -40,21 +41,17 @@ const Table = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        navigate('/login');
+        navigate('/portal/login');
         return;
       }
 
       let params = {};
-      if (Object.values(searchTerms).every(term => term)) {
-        params = { ...searchTerms };
-      }
 
-      // Ensure start_date and end_date are included in the params
-      if (searchTerms.start_date) {
-        params['start_date'] = searchTerms.start_date;
-      }
-      if (searchTerms.end_date) {
-        params['end_date'] = searchTerms.end_date;
+      // Pass only the non-empty search terms to the API
+      for (const [key, value] of Object.entries(searchTerms)) {
+        if (value) {
+          params[key] = value;
+        }
       }
 
       const response = await axios.get(`${url}/api/get_user_list/page/${currentPage}`, {
@@ -83,6 +80,9 @@ const Table = () => {
 
   useEffect(() => {
     fetchUsers();
+    if (searchTerms.start_date === null || searchTerms.end_date === null) {
+      setSearchDateActive(false)
+    }
     // eslint-disable-next-line
   }, [user, currentPage, searchTerms]);
 
@@ -97,20 +97,11 @@ const Table = () => {
   };
 
   const mapFields = [
-    { id: 1, name: "id", placeholder: "IRhereNumber..." },
+    { id: 1, name: "id", placeholder: "Personal ID..." },
     { id: 2, name: "name", placeholder: "Name..." },
     { id: 3, name: "email", placeholder: "Email/Phone..." },
     { id: 4, name: "phone_no", placeholder: "Phone..." },
   ];
-
-  const filterData = User?.Data?.filter((item) => {
-    return (
-      item.id.toLowerCase().includes(searchTerms.id.toLowerCase()) &&
-      item.name.toLowerCase().includes(searchTerms.name.toLowerCase()) &&
-      item.email.toLowerCase().includes(searchTerms.email.toLowerCase()) &&
-      item.phone_no.toLowerCase().includes(searchTerms.phone_no.toLowerCase())
-    );
-  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -175,13 +166,14 @@ const Table = () => {
                     </span>
                   </button>
                   <button
-                    onClick={() => setModalShow(true)}
-                    className="dt-button create-new btn btn-primary waves-effect waves-light"
+                    onClick={() => { setSearchDateActive(true); setModalShow(true) }}
+                    className="dt-button create-new btn btn-primary waves-effect waves-light search-dates"
                     aria-controls="DataTables_Table_0"
                     type="button"
                   >
                     <i className="menu-icon tf-icons ti ti-calendar"></i>
                     <span className="d-none d-sm-inline-block">Search By Dates</span>
+                    <span className={`${searchDateActive === true ? 'search-dates-active' : ''}`}></span>
                   </button>
                   <SearchByDate show={modalShow} onHide={() => setModalShow(false)} onSearch={handleSearchByDate} />
                 </div>
@@ -191,7 +183,7 @@ const Table = () => {
               <table className="table table-striped">
                 <thead className="border-bottom table-bg text-center">
                   <tr>
-                    <th>IRhere Number</th>
+                    <th>Personal ID</th>
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
@@ -221,13 +213,13 @@ const Table = () => {
                       </td>
                     ))}
                   </tr>
-                  {Array.isArray(filterData) && filterData.length === 0 ? (
+                  {Array.isArray(User?.Data) && User?.Data.length === 0 ? (
                     <tr>
                       <td colSpan="6">No records found</td>
                     </tr>
                   ) : (
                     <>
-                      {Array.isArray(filterData) && filterData.map((item) => (
+                      {Array.isArray(User?.Data) && User?.Data.map((item) => (
                         <tr key={item.id}>
                           <td>
                             <small>{item.id}</small>
@@ -244,25 +236,19 @@ const Table = () => {
                           <td>
                             <div className="dropdown">
                               <button
-                                className="btn p-0"
                                 type="button"
-                                id="earningReportsId"
+                                className="btn dropdown-toggle hide-arrow p-0"
                                 data-bs-toggle="dropdown"
                               >
-                                <i className="ti ti-dots-vertical ti-sm text-muted"></i>
+                                <i className="ti ti-dots-vertical"></i>
                               </button>
-                              <div className="dropdown-menu dropdown-menu-end py-2 rounded text-center">
-                                <button
-                                  className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2"
-                                  onClick={() => handleShowEditModal(true, item)}
-                                >
-                                  <i className="ti ti-pencil hm-icon-size"></i>
+                              <div className="dropdown-menu">
+                                <button className="dropdown-item" onClick={() => handleShowEditModal(true, item)}>
+                                  <i className="ti ti-pencil me-1"></i>
                                   Edit
                                 </button>
-                                <button className="dropdown-item p-0 m-0 w-100 text-primary d-flex px-4 align-items-center mt-2 py-2 gap-2"
-                                  onClick={() => handleShowDeleteModal(true, item)}
-                                >
-                                  <i className="ti ti-trash hm-icon-size"></i>
+                                <button className="dropdown-item" onClick={() => handleShowDeleteModal(true, item)}>
+                                  <i className="ti ti-trash me-1"></i>
                                   Delete
                                 </button>
                               </div>
@@ -272,9 +258,6 @@ const Table = () => {
                       ))}
                     </>
                   )}
-
-                  <MyVerticallyCenteredModal show={showEditModal} onHide={() => setShowEditModal(false)} item={selectedItem} />
-                  <DeleteModal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} item={selectedItem} />
                 </tbody>
               </table>
             </div>
@@ -320,8 +303,17 @@ const Table = () => {
           </div>
         </div>
       </div>
-
-    </div>
+      <MyVerticallyCenteredModal
+        show={showEditModal}
+        onHide={() => handleShowEditModal(false)}
+        selectedItem={selectedItem}
+      />
+      <DeleteModal
+        show={showDeleteModal}
+        onHide={() => handleShowDeleteModal(false)}
+        selectedItem={selectedItem}
+      />
+    </div >
   );
 };
 

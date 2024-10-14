@@ -14,6 +14,7 @@ const Table = () => {
     const [totalPagesLength, setTotalPagesLength] = useState(0);
     const [stats, setStats] = useState(0);
     const [modalShow, setModalShow] = React.useState(false);
+    const [searchDateActive, setSearchDateActive] = useState(false);
     const navigate = useNavigate()
 
     const itemsPerPage = 10;
@@ -36,7 +37,7 @@ const Table = () => {
 
     useEffect(() => {
         if (!token) {
-            navigate('/login');
+            navigate('/portal/login');
             return;
         }
 
@@ -84,6 +85,10 @@ const Table = () => {
         };
 
         fetchVoucher();
+
+        if (searchTerms.start_date === null || searchTerms.end_date === null) {
+            setSearchDateActive(false)
+        }
     }, [currentPage, user, url, searchTerms, token, navigate]);
 
 
@@ -150,13 +155,14 @@ const Table = () => {
                                     </span>
                                 </button>
                                 <button
-                                    onClick={() => setModalShow(true)}
-                                    className="dt-button create-new btn btn-primary waves-effect waves-light"
+                                    onClick={() => { setSearchDateActive(true); setModalShow(true) }}
+                                    className="dt-button create-new btn btn-primary waves-effect waves-light search-dates"
                                     aria-controls="DataTables_Table_0"
                                     type="button"
                                 >
                                     <i className="menu-icon tf-icons ti ti-calendar"></i>
                                     <span className="d-none d-sm-inline-block">Search By Dates</span>
+                                    <span className={`${searchDateActive === true ? 'search-dates-active' : ''}`}></span>
                                 </button>
                                 <SearchByDate show={modalShow} onHide={() => setModalShow(false)} onSearch={handleSearchByDate} />
                             </div>
@@ -213,8 +219,8 @@ const Table = () => {
                                         voucher?.map(item => (
                                             <tr key={item.voucher_code}>
                                                 <td><small>{item.voucher_code}</small></td>
-                                                <td><small>{item.date}</small></td>
-                                                <td><small>{item.valid_date}</small></td>
+                                                <td>   <small>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></td>
+                                                <td>   <small>{new Date(item.valid_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></td>
                                                 <td><small>{item.amount}</small></td>
                                                 <td>
                                                     {new Date(item.valid_date) < new Date() ? (

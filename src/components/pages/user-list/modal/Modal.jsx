@@ -89,7 +89,7 @@ function MyVerticallyCenteredModal({ item, ...props }) {
                     </div>
                     <div className="col-6 my-2">
                         <input
-                            type="text"
+                            type="email"
                             className="form-control"
                             name='email'
                             placeholder='Email'

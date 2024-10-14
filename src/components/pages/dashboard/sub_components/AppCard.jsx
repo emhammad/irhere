@@ -15,7 +15,7 @@ const Appcard = () => {
             const token = user?.access_token;
             if (!user) {
                 toast.error("Token Expired")
-                navigate('/login')
+                navigate('/portal/login')
             } else {
                 try {
                     const formData = new FormData();

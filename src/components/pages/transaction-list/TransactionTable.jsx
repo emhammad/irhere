@@ -13,6 +13,7 @@ const Table = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPagesLength, setTotalPagesLength] = useState(0);
   const [modalShow, setModalShow] = React.useState(false);
+  const [searchDateActive, setSearchDateActive] = useState(false);
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -36,7 +37,7 @@ const Table = () => {
     const transactionData = async () => {
       const token = user?.access_token;
       if (!token) {
-        navigate('/login');
+        navigate('/portal/login');
         return;
       }
 
@@ -74,8 +75,10 @@ const Table = () => {
       }
     };
 
-
     transactionData();
+    if (searchTerms.start_date === null || searchTerms.end_date === null) {
+      setSearchDateActive(false)
+    }
   }, [user, currentPage, url, searchTerms, navigate]);
 
   const nextPage = () => {
@@ -134,10 +137,6 @@ const Table = () => {
     URL.revokeObjectURL(url);
   };
 
-  console.log(transaction);
-  console.log(filterData);
-
-
   return (
     <div>
       <div className="card">
@@ -163,13 +162,14 @@ const Table = () => {
                     </span>
                   </button>
                   <button
-                    onClick={() => setModalShow(true)}
-                    className="dt-button create-new btn btn-primary waves-effect waves-light"
+                    onClick={() => { setSearchDateActive(true); setModalShow(true) }}
+                    className="dt-button create-new btn btn-primary waves-effect waves-light search-dates"
                     aria-controls="DataTables_Table_0"
                     type="button"
                   >
                     <i className="menu-icon tf-icons ti ti-calendar"></i>
                     <span className="d-none d-sm-inline-block">Search By Dates</span>
+                    <span className={`${searchDateActive === true ? 'search-dates-active' : ''}`}></span>
                   </button>
                   <SearchByDate show={modalShow} onHide={() => setModalShow(false)} onSearch={handleSearchByDate} />
                 </div>

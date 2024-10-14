@@ -28298,3 +28298,18 @@ a.bg-vimeo:focus {
     width: 100% !important;
   }
 }
+
+.search-dates {
+  position: relative;
+}
+
+.search-dates-active {
+  position: absolute;
+  padding: 5px;
+  line-height: 1px;
+  background-color: red;
+  border: 2px solid white;
+  border-radius: 25px;
+  top: -8px;
+  right: -4px;
+}

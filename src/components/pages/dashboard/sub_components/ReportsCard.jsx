@@ -47,7 +47,7 @@ const Reportscharts = () => {
         <div className="card-header d-flex justify-content-between">
           <div className="card-title mb-0">
             <h5 className="m-0 me-2">Earning Reports</h5>
-            <small className="text-muted">Weekly Earnings Overview</small>
+            <small className="text-muted">Monthly Overview</small>
           </div>
         </div>
 

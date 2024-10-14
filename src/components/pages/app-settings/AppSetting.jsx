@@ -20,6 +20,7 @@ const AppSetting = () => {
 
   useEffect(() => {
     fetchTerms();
+    getGesture();
     // eslint-disable-next-line
   }, [user]);
 
@@ -27,7 +28,7 @@ const AppSetting = () => {
     try {
       const token = user?.access_token;
       if (!token) {
-        navigate('/login');
+        navigate('/portal/login');
       }
 
       const response = await axios.post(getTemsApi, '', {
@@ -50,7 +51,7 @@ const AppSetting = () => {
   const updateTerms = async () => {
     try {
       if (!token) {
-        navigate('/login');
+        navigate('/portal/login');
       }
 
       let isUpdated = false;
@@ -118,6 +119,24 @@ const AppSetting = () => {
     }));
   };
 
+  const getGesture = async () => {
+    try {
+      const response = await axios.get(`${url}/api/get_gesture_video`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setNumber({
+        gestureCount: response.data.gestureCount,
+        detectionDuration: response.data.detectionDuration
+      })
+    } catch (error) {
+      toast.error(error.response.data.desc);
+      console.error("Error updating gesture:", error);
+    }
+  };
+
   const updateGesture = async () => {
     try {
       const response = await axios.post(`${url}/api/update_gesture_video`, number, {
@@ -127,6 +146,7 @@ const AppSetting = () => {
         },
       });
       toast.success(response.data.desc);
+      getGesture()
       setNumber({
         gestureCount: '',
         detectionDuration: ''
@@ -216,7 +236,8 @@ const AppSetting = () => {
           <div className="card py-4 px-4">
             <div className="row">
               <div className="col-lg-6 col-md-12">
-                <p>The number of gestures to be performed on the App.</p>
+                <p className="mb-2">The number of gestures to be performed on the App.</p>
+                <small className="text-muted">Please add a number between 1 and 7</small>
                 <select
                   name="gestureCount"
                   className="form-select"
@@ -232,7 +253,8 @@ const AppSetting = () => {
                 </select>
               </div>
               <div className="col-lg-6 col-md-12">
-                <p>Allowed time in seconds to perform gestures.</p>
+                <p className="mb-2">Allowed time in seconds to perform gestures.</p>
+                <small className="text-muted">Select time in seconds</small>
                 <select
                   name="detectionDuration"
                   className="form-select"
