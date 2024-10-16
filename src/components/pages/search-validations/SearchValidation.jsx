@@ -178,8 +178,9 @@ const SearchValidation = () => {
                                                             </small>
                                                         </td>
                                                         <td>
-                                                            <span className={`badge ${item.status ? "bg-label-success" : "bg-label-danger"}`}>
-                                                                {item.status ? "verified" : "unverified"}
+                                                            {console.log(item.status)}
+                                                            <span className={`badge ${item.status  === "True" ? "bg-label-success" : "bg-label-danger"}`}>
+                                                                {item.status === "True" ? "verified" : "unverified"}
                                                             </span>
                                                         </td>
                                                     </tr>

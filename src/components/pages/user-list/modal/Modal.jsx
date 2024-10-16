@@ -5,7 +5,6 @@ import Modal from 'react-bootstrap/Modal';
 import toast from 'react-hot-toast';
 import { useSelector } from 'react-redux';
 
-
 function MyVerticallyCenteredModal({ item, ...props }) {
     const user = useSelector((state) => state.user?.user || {});
     const url = process.env.REACT_APP_SERVER_DOMAIN;
@@ -22,23 +21,27 @@ function MyVerticallyCenteredModal({ item, ...props }) {
                 name: item.name || '',
                 email: item.email || '',
                 phone_no: item.phone_no || ''
-            })
-            console.log("item: ", item);
-
+            });
         }
-    }, [item])
+    }, [item]);
 
     const handleChange = (e) => {
-        const { name, value } = e.target
+        const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
             [name]: value,
-        }))
-    }
+        }));
+    };
 
     const handleSubmit = async () => {
-        try {
+        // Email validation regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            toast.error('Please enter a valid email address.');
+            return; // Stop execution if email is not valid
+        }
 
+        try {
             const payload = {
                 user_id: Number(item.user_id),
                 ...formData
@@ -53,14 +56,13 @@ function MyVerticallyCenteredModal({ item, ...props }) {
 
             window.location.reload(); // Refresh the page
             props.onHide();
-            toast.success(response.data.desc)
+            toast.success(response.data.desc);
         } catch (error) {
             props.onHide();
             console.error('Error updating user info:', error);
-            toast.error('Error updating user info')
+            toast.error('Error updating user info');
         }
-
-    };
+    };    
 
     return (
         <Modal
@@ -90,12 +92,17 @@ function MyVerticallyCenteredModal({ item, ...props }) {
                     <div className="col-6 my-2">
                         <input
                             type="email"
-                            className="form-control"
+                            className={`form-control ${formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) ? 'is-invalid' : ''}`}
                             name='email'
                             placeholder='Email'
                             onChange={handleChange}
                             value={formData.email}
                         />
+                        {formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                            <div className="invalid-feedback">
+                                Please enter a valid email address.
+                            </div>
+                        )}
                     </div>
                     <div className="col-6 my-2">
                         <input

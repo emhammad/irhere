@@ -5,19 +5,19 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import SearchByDate from './search-by-date';
+import toast from 'react-hot-toast';
 
 const Table = () => {
     const [loading, setLoading] = useState(true);
     const user = useSelector((state) => state.user?.user || {});
     const url = process.env.REACT_APP_SERVER_DOMAIN;
-    const [tableData, setTableData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPagesLength, setTotalPagesLength] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
     const [modalShow, setModalShow] = React.useState(false);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [searchDateActive, setSearchDateActive] = useState(false);
+    const [exportLoading, setExportLoad] = useState(false);
     const navigate = useNavigate();
 
     const [searchTerms, setSearchTerms] = useState({
@@ -89,7 +89,7 @@ const Table = () => {
             params['start_date'] = searchTerms.start_date;
         }
         if (searchTerms.end_date) {
-            params['end_date'] = searchTerms.end_date; 
+            params['end_date'] = searchTerms.end_date;
         }
 
         if (!token) {
@@ -107,21 +107,11 @@ const Table = () => {
                     },
                 });
 
-                const TotalValidations = await axios.get(`${url}/api/dashboard_stats`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data',
-                    }
-                });
-
-                setTotalPages(TotalValidations.data.total_validations);
-
                 if (response.status === 200) {
                     const dataArray = Object.values(response.data.Data);
-                    setTableData(dataArray);
                     setFilteredData(dataArray.slice(0, itemsPerPage)); // Slice the data according to itemsPerPage
                     setLoading(false);
-                    setTotalPagesLength(response.data.Page?.TotalPages || 1);
+                    setTotalPagesLength(response.data.Page?.TotalRecords || 1);
 
                 } else {
                     setTotalPagesLength(1);
@@ -153,55 +143,84 @@ const Table = () => {
         setCurrentPage((prevPage) => Math.max(prevPage - 1, 1));
     };
 
-    const handleExportExcel = () => {
-        const headers = ['Validation Number', 'Name', 'Email/Phone', 'Date', 'Status'];
-        const rows = tableData.map(item => [
-            item.ver_id,
-            item.name,
-            item.email,
-            item.date ? new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '', // Format date or handle empty dates
-            item.status === "True" ? "Verified" : "Unverified"
-        ]);
+    const handleExportExcel = async () => {
 
-        // Prepare data for the worksheet
-        const worksheetData = [headers, ...rows];
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        const { start_date, end_date } = searchTerms;
 
-        // Create a workbook and append the worksheet
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Validation List');
+        if (!start_date || !end_date) {
+            toast.error('Please select start and end dates to export the records.');
+            return;
+        }
 
-        // Get the first non-empty date from the data
-        const firstDate = tableData.find(item => item.date)?.date;
+        setExportLoad(true)
 
-        // If no date is found, fallback to today's date (optional)
-        const dateToUse = firstDate ? new Date(firstDate) : new Date();
+        try {
+            const token = user?.access_token;
+            const response = await axios.get(`${url}/api/export_certificate_list`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                params: {
+                    start_date,
+                    end_date,
+                },
+            });
 
-        // Format the date as "4 Feb 2024"
-        const options = { day: 'numeric', month: 'short', year: 'numeric' };
-        const formattedDate = new Intl.DateTimeFormat('en-GB', options).format(dateToUse);
+            if (response.status === 200 && response.data) {
+                const exportData = response.data; // Assuming this is an array of objects
 
-        // Convert workbook to binary
-        const excelFile = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+                // Create headers (adjust according to your data)
+                const headers = [
+                    { label: 'Validation Number', key: 'ver_id' },
+                    { label: 'Name', key: 'name' },
+                    { label: 'Email/Phone', key: 'email' },
+                    { label: 'Date', key: 'date' },
+                    { label: 'Address', key: 'address' },
+                    { label: 'Status', key: 'status' }
+                ];
 
-        // Create a Blob and download link for the Excel file
-        const blob = new Blob([s2ab(excelFile)], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Validation List - ${formattedDate}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    };
+                // Prepare the data rows
+                const worksheetData = exportData.map(item => ({
+                    ver_id: item.ver_id,
+                    name: item.name,
+                    email: item.email,
+                    date: new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    address: item.address,
+                    status: item.status === "True" ? "Verified" : "Unverified"
+                }));
 
-    // Helper function to convert string to array buffer
-    const s2ab = (s) => {
-        const buf = new ArrayBuffer(s.length);
-        const view = new Uint8Array(buf);
-        for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
-        return buf;
+                // Create a worksheet and workbook
+                const worksheet = XLSX.utils.json_to_sheet(worksheetData, { header: headers.map(h => h.key) });
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Validations List');
+
+                // Generate file and trigger download
+                const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `Validations List - ${new Intl.DateTimeFormat('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                }).format(new Date(start_date))} to ${new Intl.DateTimeFormat('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                }).format(new Date(end_date))}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+                setExportLoad(false)
+            } else {
+                toast.error('Failed to export records. Please try again.');
+                setExportLoad(false)
+            }
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            setExportLoad(false)
+            toast.error('Error exporting data.');
+        }
     };
 
     const handleSearchByDate = (start_date, end_date) => {
@@ -224,8 +243,8 @@ const Table = () => {
                             <div className="dt-buttons">
                                 <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light" onClick={handleExportExcel} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
                                     <span>
-                                        <i className="ti ti-upload me-1"></i>
-                                        <span className="d-none d-sm-inline-block">Export</span>
+                                        {exportLoading === false ? <i className="ti ti-upload me-1"></i> : ''}
+                                        <span className="d-none d-sm-inline-block">{exportLoading === false ? 'Export' : 'Loading'}</span>
                                     </span>
                                 </button>
                                 <button
@@ -316,7 +335,17 @@ const Table = () => {
                                                 <td><small>{item.name}</small></td>
                                                 <td><small>{item.email}</small></td>
                                                 <td>
-                                                    <small>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
+                                                    <small>
+                                                        {new Date(item.date).toLocaleString('en-GB', {
+                                                            day: 'numeric',
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                            hour: 'numeric',
+                                                            minute: 'numeric',
+                                                            second: 'numeric',
+                                                            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                                                        })}
+                                                    </small>
                                                 </td>
                                                 <td><small>{item.address}</small></td>
                                                 <td>
@@ -356,8 +385,8 @@ const Table = () => {
                                 <p className="m-0" style={{ whiteSpace: "nowrap" }}>{`${(currentPage - 1) * itemsPerPage + 1
                                     }-${Math.min(
                                         currentPage * itemsPerPage,
-                                        totalPages
-                                    )} of ${totalPages}`}</p>
+                                        totalPagesLength
+                                    )} of ${totalPagesLength}`}</p>
                                 <button
                                     className={`p - 2 border-0 bg-transparent`}
                                     onClick={prevPage}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import * as XLSX from 'xlsx';
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import axios from "axios";
@@ -22,6 +23,7 @@ const Table = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchDateActive, setSearchDateActive] = useState(false);
+  const [exportLoading, setExportLoad] = useState(false);
   const [searchTerms, setSearchTerms] = useState({
     id: "",
     name: "",
@@ -64,14 +66,7 @@ const Table = () => {
 
       setUsers(response?.data);
       setTotalItems(response.data?.Data?.length);
-
-      const statistics = await axios.get(`${url}/api/dashboard_stats`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        }
-      });
-      setStats(statistics.data.total_users);
+      setStats(response.data?.Page?.TotalRecords);
 
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -111,34 +106,88 @@ const Table = () => {
     }));
   };
 
-  const handleExportCSV = () => {
-    if (!User.Data) {
-      toast.error("No data available to export");
+  const handleExportExcel = async () => {
+    const { start_date, end_date } = searchTerms;
+
+    if (!start_date || !end_date) {
+      toast.error('Please select start and end dates to export the records.');
       return;
     }
+    setExportLoad(true)
 
-    const headers = ["IRhere Number", "Name", "Email/Phone", "Phone"];
-    const csvContent = [headers.join(',')].join('\n');
+    try {
+      const token = user?.access_token;
+      const response = await axios.get(`${url}/api/export_user_list`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params: {
+          start_date,
+          end_date,
+        },
+      });
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'User List.csv';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      if (response.status === 200 && response.data) {
+        const exportData = response.data; // Assuming this is an array of objects
+
+        // Create headers (adjust according to your data)
+        const headers = [
+          { label: 'Personal ID', key: 'personalId' },
+          { label: 'Name', key: 'name' },
+          { label: 'Email', key: 'email' },
+          { label: 'Phone', key: 'Phone' },
+        ];
+
+        // Prepare the data rows
+        const worksheetData = exportData.map(item => ({
+          personalId: item.id,
+          name: item.name,
+          email: item.email,
+          phone_no: item.phone_no,
+        }));
+
+        // Create a worksheet and workbook
+        const worksheet = XLSX.utils.json_to_sheet(worksheetData, { header: headers.map(h => h.key) });
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Users List');
+
+        // Generate file and trigger download
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Users List - ${new Intl.DateTimeFormat('en-GB', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        }).format(new Date(start_date))} to ${new Intl.DateTimeFormat('en-GB', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        }).format(new Date(end_date))}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+        setExportLoad(false)
+      } else {
+        setExportLoad(false)
+        toast.error('Failed to export records. Please try again.');
+      }
+    } catch (error) {
+      setExportLoad(false)
+      console.error('Error exporting data:', error);
+      toast.error('Error exporting data.');
+    }
   };
 
   const handleShowEditModal = (show, item) => {
     setShowEditModal(show);
-    setSelectedItem(item); // Store the selected item data
+    setSelectedItem(item);
   };
 
   const handleShowDeleteModal = (show, item) => {
     setShowDeleteModal(show);
-    setSelectedItem(item); // Store the selected item data
+    setSelectedItem(item);
   };
 
   return (
@@ -148,7 +197,7 @@ const Table = () => {
           <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
             <div className="card-header header-flex d-flex justify-content-between p-3 flex-wrap">
               <div className="head-label d-flex align-items-center">
-                <h5 className="card-title mb-0">User List</h5>
+                <h5 className="card-title mb-0">Users List</h5>
               </div>
               <div className="dt-action-buttons text-end pt-3 pt-md-0">
                 <div className="dt-buttons">
@@ -158,11 +207,11 @@ const Table = () => {
                     type="button"
                     aria-haspopup="dialog"
                     aria-expanded="false"
-                    onClick={handleExportCSV}
+                    onClick={handleExportExcel}
                   >
                     <span>
-                      <i className="ti ti-upload me-1"></i>
-                      <span className="d-none d-sm-inline-block">Export</span>
+                      {exportLoading === false ? <i className="ti ti-upload me-1"></i> : ''}
+                      <span className="d-none d-sm-inline-block">{exportLoading === false ? 'Export' : 'Loading'}</span>
                     </span>
                   </button>
                   <button
@@ -306,12 +355,13 @@ const Table = () => {
       <MyVerticallyCenteredModal
         show={showEditModal}
         onHide={() => handleShowEditModal(false)}
-        selectedItem={selectedItem}
+        item={selectedItem}
       />
+
       <DeleteModal
         show={showDeleteModal}
         onHide={() => handleShowDeleteModal(false)}
-        selectedItem={selectedItem}
+        item={selectedItem}
       />
     </div >
   );

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import SearchByDate from './search-by-date';
+import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 const Table = () => {
   const [transaction, setTransaction] = useState([]);
@@ -14,6 +16,7 @@ const Table = () => {
   const [totalPagesLength, setTotalPagesLength] = useState(0);
   const [modalShow, setModalShow] = React.useState(false);
   const [searchDateActive, setSearchDateActive] = useState(false);
+  const [exportLoading, setExportLoad] = useState(false);
   const itemsPerPage = 10;
   const navigate = useNavigate();
 
@@ -65,7 +68,7 @@ const Table = () => {
         }
         if (Array.isArray(response.data?.Data)) {
           setTransaction(response.data.Data);
-          setTotalPagesLength(response.data.Page?.TotalPages || 1);
+          setTotalPagesLength(response.data.Page?.TotalRecords || 1);
         } else {
           setTransaction([]);
           setTotalPagesLength(1);
@@ -108,33 +111,83 @@ const Table = () => {
     }));
   };
 
-  const handleExportCSV = () => {
-    if (!transaction.length) return;
+  const handleExportExcel = async () => {
+    const { start_date, end_date } = searchTerms;
 
-    const headers = ["Transaction ID", "Name", "Email/Phone", "Amount", "Location", "Balance"];
-    const rows = transaction.map(item => [
-      item.id,
-      item.name,
-      item.email,
-      item.amount,
-      `"${item.descrip.replace(/"/g, '""')}"`, // Escape double quotes within the description
-      item.balance
-    ]);
+    if (!start_date || !end_date) {
+      toast.error('Please select start and end dates to export the records.');
+      return;
+    }
 
-    const csvContent = [
-      headers.join(','), // Add headers
-      ...rows.map(row => row.join(',')) // Add rows
-    ].join('\n');
+    setExportLoad(true)
 
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Transaction List.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const token = user?.access_token;
+      const response = await axios.get(`${url}/api/export_transaction_history`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        params: {
+          start_date,
+          end_date,
+        },
+      });
+
+      if (response.status === 200 && response.data) {
+        const exportData = response.data; // Assuming this is an array of objects
+
+        // Create headers for Excel export
+        const headers = [
+          { label: 'Transaction ID', key: 'id' },
+          { label: 'Name', key: 'name' },
+          { label: 'Email/Phone', key: 'email' },
+          { label: 'Amount', key: 'amount' },
+          { label: 'Location', key: 'descrip' },
+          { label: 'Balance', key: 'balance' }
+        ];
+
+        // Prepare the data rows
+        const worksheetData = exportData.map(item => ({
+          id: item.id,
+          name: item.name,
+          email: item.email,
+          amount: item.direction === "0" ? `- ${item.amount}` : `+ ${item.amount}`,
+          descrip: item.descrip,
+          balance: item.balance
+        }));
+
+        // Create a worksheet and workbook
+        const worksheet = XLSX.utils.json_to_sheet(worksheetData, { header: headers.map(h => h.key) });
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions List');
+
+        // Generate file and trigger download
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `Transactions List ${new Intl.DateTimeFormat('en-GB', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        }).format(new Date(start_date))} to ${new Intl.DateTimeFormat('en-GB', {
+          day: 'numeric', month: 'short', year: 'numeric'
+        }).format(new Date(end_date))}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+        setExportLoad(false)
+      } else {
+        setExportLoad(false)
+        toast.error('Failed to export records. Please try again.');
+      }
+    } catch (error) {
+      setExportLoad(false)
+      console.error('Error exporting data:', error);
+      toast.error('Error exporting data.');
+    }
   };
 
   return (
@@ -144,7 +197,7 @@ const Table = () => {
           <div id="DataTables_Table_0_wrapper" className="dataTables_wrapper dt-bootstrap5 no-footer">
             <div className="card-header header-flex d-flex justify-content-between p-3 flex-wrap">
               <div className="head-label d-flex align-items-center">
-                <h5 className="card-title mb-0">Transaction List</h5>
+                <h5 className="card-title mb-0">Transactions List</h5>
               </div>
               <div className="dt-action-buttons text-end pt-3 pt-md-0">
                 <div className="dt-buttons">
@@ -154,11 +207,11 @@ const Table = () => {
                     type="button"
                     aria-haspopup="dialog"
                     aria-expanded="false"
-                    onClick={handleExportCSV}
+                    onClick={handleExportExcel}
                   >
                     <span>
-                      <i className="ti ti-upload me-1"></i>
-                      <span className="d-none d-sm-inline-block">Export</span>
+                      {exportLoading === false ? <i className="ti ti-upload me-1"></i> : ''}
+                      <span className="d-none d-sm-inline-block">{exportLoading === false ? 'Export' : 'Loading'}</span>
                     </span>
                   </button>
                   <button

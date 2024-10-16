@@ -15,6 +15,7 @@ function SearchByDate({ onSearch, ...props }) {
         return dayjs(date).format('YYYY-MM-DD');
     };
 
+
     const handleSearch = () => {
         let formattedStartDate = formatDate(startDate);
         let formattedEndDate = formatDate(endDate);

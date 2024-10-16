@@ -1,9 +1,11 @@
+import * as XLSX from 'xlsx';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 // import { FaCaretDown } from "react-icons/fa";
 import SearchByDate from './modal/search-by-date';
+import toast from 'react-hot-toast';
 
 const Table = () => {
     const user = useSelector((state) => state.user?.user || {});
@@ -15,8 +17,8 @@ const Table = () => {
     const [stats, setStats] = useState(0);
     const [modalShow, setModalShow] = React.useState(false);
     const [searchDateActive, setSearchDateActive] = useState(false);
+    const [exportLoading, setExportLoad] = useState(false);
     const navigate = useNavigate()
-
     const itemsPerPage = 10;
 
     const [searchTerms, setSearchTerms] = useState({
@@ -66,16 +68,9 @@ const Table = () => {
                     setLoading(false);
                 }
 
-                const statistics = await axios.get(`${url}/api/dashboard_stats`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'multipart/form-data',
-                    }
-                });
-                setStats(statistics.data.total_vouchers);
-
                 if (response.status === 200) {
                     setTotalPagesLength(response.data.Page?.TotalPages || 1);
+                    setStats(response.data.Page?.TotalRecords || 0);
                 } else {
                     setTotalPagesLength(1);
                 }
@@ -113,28 +108,72 @@ const Table = () => {
         }));
     };
 
-    const handleExportCSV = () => {
-        const headers = ["Voucher Code", "Date", "Expiry Date", "Amount", "Status"];
-        const csvContent = [
-            headers.join(','),
-            ...voucher.map(item => [
-                item.voucher_code,
-                item.date,
-                item.valid_date,
-                item.amount,
-                item.is_used ? "Used" : "Expired"
-            ].join(','))
-        ].join('\n');
+    const handleExportExcel = async () => {
+        const { start_date, end_date } = searchTerms;
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Voucher List.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if (!start_date || !end_date) {
+            toast.error('Please select start and end dates to export the records.');
+            return;
+        }
+
+        setExportLoad(true)
+
+        try {
+            const token = user?.access_token;
+            const response = await axios.get(`${url}/api/export_voucher_list`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                params: {
+                    start_date,
+                    end_date,
+                },
+            });
+
+            if (response.status === 200 && response.data) {
+                const exportData = response.data; // Assuming this is an array of objects
+
+                // Prepare the data rows
+                const worksheetData = exportData.map(item => ({
+                    voucher_code: item.voucher_code,
+                    date: new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    valid_date: new Date(item.valid_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    amount: item.amount,
+                    status: new Date(item.valid_date) < new Date() ? "Expired" : item.is_used === "0" ? "Not Used" : "Used"
+                }));
+
+                // Create a worksheet and workbook
+                const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Vouchers List');
+
+                // Generate file and trigger download
+                const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                const downloadUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `Vouchers List - ${new Intl.DateTimeFormat('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                }).format(new Date(start_date))} to ${new Intl.DateTimeFormat('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                }).format(new Date(end_date))}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+                setExportLoad(false)
+            } else {
+                toast.error('Failed to export records. Please try again.');
+                setExportLoad(false)
+            }
+        } catch (error) {
+            setExportLoad(false)
+            console.error('Error exporting data:', error);
+            toast.error('Error exporting data.');
+        }
     };
 
     return (
@@ -148,10 +187,10 @@ const Table = () => {
                         <div className="dt-action-buttons text-end pt-3 pt-md-0">
                             <div className="dt-buttons">
                                 <button className="dt-button buttons-collection btn btn-label-primary me-2 waves-effect waves-light"
-                                    onClick={handleExportCSV} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
+                                    onClick={handleExportExcel} aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
                                     <span>
-                                        <i className="ti ti-upload me-1"></i>
-                                        <span className="d-none d-sm-inline-block">Export</span>
+                                        {exportLoading === false ? <i className="ti ti-upload me-1"></i> : ''}
+                                        <span className="d-none d-sm-inline-block">{exportLoading === false ? 'Export' : 'Loading'}</span>
                                     </span>
                                 </button>
                                 <button
@@ -219,8 +258,8 @@ const Table = () => {
                                         voucher?.map(item => (
                                             <tr key={item.voucher_code}>
                                                 <td><small>{item.voucher_code}</small></td>
-                                                <td>   <small>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></td>
-                                                <td>   <small>{new Date(item.valid_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</small></td>
+                                                <td>   <small>{new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</small></td>
+                                                <td>   <small>{new Date(item.valid_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })}</small></td>
                                                 <td><small>{item.amount}</small></td>
                                                 <td>
                                                     {new Date(item.valid_date) < new Date() ? (
