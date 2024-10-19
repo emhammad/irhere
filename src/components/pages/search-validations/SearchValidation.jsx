@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import * as XLSX from 'xlsx';
 import { useSelector } from "react-redux";
 import IRhere_Logo from '../../../assets/irhere_images/Group 389.png';
 import toast from "react-hot-toast";
@@ -52,32 +53,32 @@ const SearchValidation = () => {
                 setLoading(false);
             }
         }
-
     }
 
+    const handleExportExcel = () => {
+        const headers = ["Validation No", "Name", "Address", "Date", "Status"];
 
-    const handleExportCSV = () => {
-        const headers = ["Validation Number", "Name", "Address", "Date", "Status"];
-        const csvContent = [
-            headers.join(','),
+        // Prepare the data for the Excel sheet
+        const excelData = [
+            headers,
             ...data.map(item => [
                 item.ver_id,
                 item.name,
                 item.address,
                 item.date,
                 item.status ? "verified" : "unverified"
-            ].join(','))
-        ].join('\n');
+            ])
+        ];
 
-        const blob = new Blob([csvContent], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Search Validation.csv';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Create a new workbook and a worksheet
+        const ws = XLSX.utils.aoa_to_sheet(excelData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Search Validation');
+
+        // Export the Excel file
+        const excelFileName = `Search Validation ${new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\s/g, '-')}.xlsx`;
+
+        XLSX.writeFile(wb, excelFileName);
     };
 
     return (
@@ -120,7 +121,7 @@ const SearchValidation = () => {
                                                 type="button"
                                                 aria-haspopup="dialog"
                                                 aria-expanded="false"
-                                                onClick={handleExportCSV}
+                                                onClick={handleExportExcel}
                                             >
                                                 <span>
                                                     <i className="ti ti-upload me-1"></i>
@@ -179,7 +180,7 @@ const SearchValidation = () => {
                                                         </td>
                                                         <td>
                                                             {console.log(item.status)}
-                                                            <span className={`badge ${item.status  === "True" ? "bg-label-success" : "bg-label-danger"}`}>
+                                                            <span className={`badge ${item.status === "True" ? "bg-label-success" : "bg-label-danger"}`}>
                                                                 {item.status === "True" ? "verified" : "unverified"}
                                                             </span>
                                                         </td>

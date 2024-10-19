@@ -172,22 +172,22 @@ const Table = () => {
 
                 // Create headers (adjust according to your data)
                 const headers = [
-                    { label: 'Validation Number', key: 'ver_id' },
-                    { label: 'Name', key: 'name' },
-                    { label: 'Email/Phone', key: 'email' },
-                    { label: 'Date', key: 'date' },
-                    { label: 'Address', key: 'address' },
-                    { label: 'Status', key: 'status' }
+                    { label: 'Validation Number', key: 'Validations_No' },
+                    { label: 'Name', key: 'Name' },
+                    { label: 'Email/Phone', key: 'Email' },
+                    { label: 'Date', key: 'Date' },
+                    { label: 'Address', key: 'Address' },
+                    { label: 'Status', key: 'Status' }
                 ];
 
                 // Prepare the data rows
                 const worksheetData = exportData.map(item => ({
-                    ver_id: item.ver_id,
-                    name: item.name,
-                    email: item.email,
-                    date: new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-                    address: item.address,
-                    status: item.status === "True" ? "Verified" : "Unverified"
+                    Validations_No: item.ver_id,
+                    Name: item.name,
+                    Email: item.email,
+                    Date: new Date(item.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+                    Address: item.address,
+                    Status: item.status === "True" ? "Verified" : "Unverified"
                 }));
 
                 // Create a worksheet and workbook
